@@ -1,0 +1,137 @@
+{
+  "_readme": "Monitored documentation sources for the sync-knowledge skill. Pinned allow-list only. 'change_signal' is 'learn-date' (compare Microsoft Learn updated_at/ms.date/git_commit_id) or 'content-hash' (no date available; hash the fetched content). On first real sync, populate hash/last_known_updated. Keep in agreement with references/links.md.",
+  "version": 1,
+  "check_interval_days": 14,
+  "last_full_check": "2026-06-25",
+  "sources": [
+    {
+      "id": "cli-plugin-reference",
+      "surface": "github-cli",
+      "url": "https://docs.github.com/en/copilot/reference/cli-plugin-reference",
+      "change_signal": "content-hash",
+      "last_checked": "2026-06-25",
+      "last_known_updated": null,
+      "hash": null,
+      "affects": [
+        "skills/build-cli-plugin/templates/plugin.json",
+        "skills/build-cli-plugin/templates/marketplace.json",
+        "skills/build-cli-plugin/SKILL.md",
+        "references/links.md"
+      ],
+      "notes": "Authoritative plugin.json + marketplace.json schema, file locations, precedence. GitHub docs expose no date; use content-hash. Highest priority for the owned CLI scaffolder."
+    },
+    {
+      "id": "cli-plugins-creating",
+      "surface": "github-cli",
+      "url": "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/plugins-creating",
+      "change_signal": "content-hash",
+      "last_checked": "2026-06-25",
+      "last_known_updated": null,
+      "hash": null,
+      "affects": [
+        "skills/build-cli-plugin/SKILL.md"
+      ],
+      "notes": "Plugin structure, install/test loop. Content-hash signal."
+    },
+    {
+      "id": "m365-overview-plugins",
+      "surface": "m365-copilot",
+      "url": "https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/overview-plugins",
+      "change_signal": "learn-date",
+      "last_checked": "2026-06-25",
+      "last_known_updated": "2026-05-12",
+      "hash": null,
+      "affects": [
+        "references/routing.md",
+        "references/surface-comparison.md"
+      ],
+      "notes": "MCP vs REST plugin model; declarative-agent-only constraint. Learn updated_at signal."
+    },
+    {
+      "id": "m365-plugin-manifest",
+      "surface": "m365-copilot",
+      "url": "https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/plugin-manifest-2.4",
+      "change_signal": "learn-date",
+      "last_checked": "2026-06-25",
+      "last_known_updated": null,
+      "hash": null,
+      "affects": [
+        "references/surface-comparison.md",
+        "references/links.md"
+      ],
+      "notes": "Plugin manifest schema VERSION. Watch for a new version path (e.g., 2.5) replacing 2.4 — high-risk structural change, route through review."
+    },
+    {
+      "id": "m365-declarative-agent-manifest",
+      "surface": "m365-copilot",
+      "url": "https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/declarative-agent-manifest-1.7",
+      "change_signal": "learn-date",
+      "last_checked": "2026-06-25",
+      "last_known_updated": null,
+      "hash": null,
+      "affects": [
+        "references/surface-comparison.md",
+        "references/links.md"
+      ],
+      "notes": "Declarative agent manifest VERSION. Watch for a new version path (e.g., 1.8) replacing 1.7 — update links and matrix."
+    },
+    {
+      "id": "cowork-plugins",
+      "surface": "cowork",
+      "url": "https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-plugins",
+      "change_signal": "learn-date",
+      "last_checked": "2026-06-25",
+      "last_known_updated": "2026-06-18",
+      "hash": null,
+      "affects": [
+        "skills/build-cowork/SKILL.md",
+        "skills/build-cowork/templates/cowork-skill.md"
+      ],
+      "notes": "Cowork plugin/skill usage + management. Learn updated_at signal."
+    },
+    {
+      "id": "cowork-customize",
+      "surface": "cowork",
+      "url": "https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-customize",
+      "change_signal": "learn-date",
+      "last_checked": "2026-06-25",
+      "last_known_updated": "2026-06-18",
+      "hash": null,
+      "affects": [
+        "skills/build-cowork/SKILL.md"
+      ],
+      "notes": "Cowork Customize page: create-skill (guided) and upload-plugin-package flows. Learn updated_at signal."
+    },
+    {
+      "id": "cowork-plugin-development",
+      "surface": "cowork",
+      "url": "https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-plugin-development",
+      "change_signal": "learn-date",
+      "last_checked": "2026-06-25",
+      "last_known_updated": null,
+      "hash": null,
+      "affects": [
+        "skills/build-cowork/SKILL.md",
+        "skills/build-cowork/templates/skill/SKILL.md",
+        "skills/build-cowork/templates/plugin-package/manifest.json",
+        "skills/build-cowork/templates/plugin-package/README.md",
+        "references/surface-comparison.md",
+        "references/links.md"
+      ],
+      "notes": "AUTHORITATIVE Cowork plugin package schema: M365 app package (.zip) with Unified App Manifest (current v1.29; v1.28 also accepted) and agentSkills[] + optional agentConnectors[], skills/<name>/SKILL.md (frontmatter name == folder), 192x192 + 32x32 icons, validation rules (ASKILL-*), and the Claude-plugin conversion script. Connector tool discovery: omit mcpToolDescription for dynamic tools/list (requires v1.29); set mcpToolDescription.file for static (works on v1.28). Watch for the next manifest version bump."
+    },
+    {
+      "id": "cowork-elicitation-forms",
+      "surface": "cowork",
+      "url": "https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-elicitation-forms",
+      "change_signal": "learn-date",
+      "last_checked": "2026-06-25",
+      "last_known_updated": null,
+      "hash": null,
+      "affects": [
+        "skills/build-cowork/SKILL.md"
+      ],
+      "notes": "MCP elicitation (elicitation/create) for structured mid-tool-call input in Cowork connectors: flat object, primitive fields only, no secrets. Form mode only."
+    }
+  ]
+}

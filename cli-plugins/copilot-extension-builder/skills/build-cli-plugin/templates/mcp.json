@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "{{SERVER_NAME}}": {
+      "command": "npx",
+      "args": ["-y", "{{MCP_PACKAGE_OR_PATH}}"],
+      "env": {
+        "{{API_KEY_ENV_VAR}}": "${input:{{API_KEY_ENV_VAR}}}"
+      }
+    }
+  }
+}

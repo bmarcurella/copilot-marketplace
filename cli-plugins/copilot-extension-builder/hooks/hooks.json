@@ -1,0 +1,12 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "bash \"${PLUGIN_ROOT}/scripts/check-freshness.sh\"",
+        "windows": "powershell -NoProfile -ExecutionPolicy Bypass -File \"${PLUGIN_ROOT}/scripts/check-freshness.ps1\"",
+        "timeout": 15
+      }
+    ]
+  }
+}

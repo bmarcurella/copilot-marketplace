@@ -1,0 +1,27 @@
+{
+  "name": "copilot-marketplace",
+  "owner": {
+    "name": "Brandon Marcurella"
+  },
+  "metadata": {
+    "description": "Personal marketplace and library for Copilot extensions — GitHub Copilot CLI plugins, Cowork plugins, and reusable skills/agents.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "copilot-extension-builder",
+      "source": "cli-plugins/copilot-extension-builder",
+      "description": "Interview-driven builder for Copilot agents, skills, and plugins across GitHub Copilot CLI/VS Code, Microsoft 365 Copilot, Copilot Cowork, and Copilot Studio.",
+      "version": "0.1.0",
+      "license": "MIT",
+      "keywords": [
+        "copilot",
+        "plugin",
+        "agent",
+        "skill",
+        "scaffold",
+        "extensibility"
+      ]
+    }
+  ]
+}

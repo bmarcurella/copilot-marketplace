@@ -1,0 +1,44 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.29/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.29",
+  "version": "1.0.0",
+  "id": "{{GENERATE-A-GUID}}",
+  "developer": {
+    "name": "{{Publisher or Org}}",
+    "websiteUrl": "https://example.com",
+    "privacyUrl": "https://example.com/privacy",
+    "termsOfUseUrl": "https://example.com/terms"
+  },
+  "name": {
+    "short": "{{Plugin Name}}",
+    "full": "{{Plugin Name}} for Copilot Cowork"
+  },
+  "description": {
+    "short": "{{Under 80 chars: what this plugin adds}}",
+    "full": "{{1-2 sentences: the skills and/or connectors this plugin adds to Cowork}}"
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "accentColor": "#2B579A",
+  "agentSkills": [
+    { "folder": "./skills/{{skill-one}}" },
+    { "folder": "./skills/{{skill-two}}" }
+  ],
+  "agentConnectors": [
+    {
+      "id": "{{connector-id}}",
+      "displayName": "{{Connector Display Name}}",
+      "description": "{{What this connector gives Cowork access to}}",
+      "toolSource": {
+        "remoteMcpServer": {
+          "mcpServerUrl": "https://{{your-mcp-host}}/mcp",
+          "authorization": {
+            "type": "None"
+          }
+        }
+      }
+    }
+  ]
+}

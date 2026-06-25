@@ -1,0 +1,19 @@
+{
+  "name": "{{MARKETPLACE_NAME}}",
+  "owner": {
+    "name": "{{OWNER_NAME}}"
+  },
+  "metadata": {
+    "description": "{{CATALOG_DESCRIPTION}}",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "{{PLUGIN_NAME}}",
+      "source": ".",
+      "description": "{{ONE_LINE_DESCRIPTION}}",
+      "version": "0.1.0",
+      "license": "MIT"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.29/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.29",
+  "version": "1.0.0",
+  "id": "f82606ab-2040-4196-b9fe-f9f4c4d74179",
+  "developer": {
+    "name": "{{Brandon Marcurella}}",
+    "websiteUrl": "https://example.com",
+    "privacyUrl": "https://example.com/privacy",
+    "termsOfUseUrl": "https://example.com/terms"
+  },
+  "name": {
+    "short": "Customer Architect",
+    "full": "Customer Architect for Copilot Cowork"
+  },
+  "description": {
+    "short": "Architect and scaffold Microsoft demos for customers.",
+    "full": "Reasons over current Microsoft offerings using the Microsoft Learn MCP server to architect customer demos — architecture and design options, demo planning, demo data, agent scaffolding, and Word/Excel/PowerPoint deliverables."
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "accentColor": "#2B579A",
+  "agentSkills": [
+    { "folder": "./skills/solution-architect" },
+    { "folder": "./skills/demo-planner" },
+    { "folder": "./skills/demo-data-builder" },
+    { "folder": "./skills/agent-scaffolder" },
+    { "folder": "./skills/artifact-producer" }
+  ],
+  "agentConnectors": [
+    {
+      "id": "microsoft-learn-mcp",
+      "displayName": "Microsoft Learn MCP Server",
+      "description": "Live access to official Microsoft and Azure documentation (search, fetch, and code samples) for grounding architecture and scaffolding decisions.",
+      "toolSource": {
+        "remoteMcpServer": {
+          "mcpServerUrl": "https://learn.microsoft.com/api/mcp",
+          "authorization": {
+            "type": "None"
+          }
+        }
+      }
+    }
+  ]
+}

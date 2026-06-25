@@ -1,0 +1,10 @@
+{
+  "name": "{{PLUGIN_NAME}}",
+  "description": "{{ONE_LINE_DESCRIPTION}}",
+  "version": "0.1.0",
+  "author": {
+    "name": "{{AUTHOR_NAME}}"
+  },
+  "license": "MIT",
+  "keywords": ["{{KEYWORD_1}}", "{{KEYWORD_2}}"]
+}

@@ -1,0 +1,10 @@
+# Build artifacts (ship via GitHub Releases, not git)
+dist/
+
+# Temp / verification files
+_*.txt
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.user

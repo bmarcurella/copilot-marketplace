@@ -1,0 +1,12 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "echo {{PLUGIN_NAME}} loaded",
+        "windows": "powershell -NoProfile -Command \"Write-Host '{{PLUGIN_NAME}} loaded'\"",
+        "timeout": 10
+      }
+    ]
+  }
+}

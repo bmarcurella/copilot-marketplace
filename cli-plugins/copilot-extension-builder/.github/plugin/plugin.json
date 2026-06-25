@@ -1,0 +1,28 @@
+{
+  "name": "copilot-extension-builder",
+  "description": "Interview-driven builder for Copilot agents, skills, and plugins across GitHub Copilot CLI/VS Code, Microsoft 365 Copilot, Copilot Cowork, and Copilot Studio. Helps you decide agent vs plugin vs skill, scaffolds the gaps it owns (GitHub CLI plugin packaging and Cowork), routes to your installed toolkits for the rest, and keeps its own knowledge current from Microsoft Learn and GitHub docs.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Brandon"
+  },
+  "license": "MIT",
+  "keywords": [
+    "copilot",
+    "plugin",
+    "agent",
+    "skill",
+    "scaffold",
+    "extensibility",
+    "m365-copilot",
+    "cowork",
+    "copilot-studio",
+    "mcp"
+  ],
+  "skills": [
+    "./skills/copilot-extension-builder",
+    "./skills/build-cli-plugin",
+    "./skills/build-cowork",
+    "./skills/sync-knowledge"
+  ],
+  "hooks": "./hooks/hooks.json"
+}
