@@ -7,16 +7,17 @@ deliverables.
 
 This package follows the official Cowork plugin format: an
 [M365 app package](https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-plugin-development)
-(`manifest.json` v1.28 + icons + `skills/` folders) zipped at the root.
+(`manifest.json` v1.29 + icons + `skills/` folders) zipped at the root.
 
 ## Package contents
 
 ```text
 customer-architect/
-├── manifest.json                 # M365 Unified App Manifest v1.28 (agentSkills + agentConnectors)
+├── manifest.json                 # M365 Unified App Manifest v1.29 (agentSkills + agentConnectors)
 ├── color.png                     # 192×192 color icon (placeholder — replace before store submission)
 ├── outline.png                   # 32×32 outline icon (placeholder — replace before store submission)
 └── skills/
+    ├── demo-architect/SKILL.md          # orchestrator / entry point
     ├── solution-architect/SKILL.md
     ├── demo-planner/SKILL.md
     ├── demo-data-builder/SKILL.md
@@ -28,6 +29,7 @@ customer-architect/
 
 | Skill | When it activates |
 | --- | --- |
+| `demo-architect` | **Entry point** — drives the whole demo end-to-end (architecture → deliverables) |
 | `solution-architect` | Architect/design a Microsoft solution with options + plan |
 | `demo-planner` | Turn an architecture into a scene-by-scene demo runbook |
 | `demo-data-builder` | Generate synthetic demo datasets (Excel/CSV/JSON) |

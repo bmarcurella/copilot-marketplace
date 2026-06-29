@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "id": "f82606ab-2040-4196-b9fe-f9f4c4d74179",
   "developer": {
-    "name": "{{Brandon Marcurella}}",
+    "name": "Brandon Marcurella",
     "websiteUrl": "https://example.com",
     "privacyUrl": "https://example.com/privacy",
     "termsOfUseUrl": "https://example.com/terms"
@@ -23,6 +23,7 @@
   },
   "accentColor": "#2B579A",
   "agentSkills": [
+    { "folder": "./skills/demo-architect" },
     { "folder": "./skills/solution-architect" },
     { "folder": "./skills/demo-planner" },
     { "folder": "./skills/demo-data-builder" },
