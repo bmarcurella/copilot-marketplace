@@ -23,7 +23,9 @@ servers belong in [mcp-servers](https://github.com/bmarcurella/mcp-servers) inst
      `outline.png` 32×32, `skills/<skill>/SKILL.md`). Do **not** add it to marketplace.json —
      Cowork packages ship as Release zips.
    - Standalone skill/agent/prompt/instruction → `library/<type>/` (see `library/README.md`).
-4. **Validate locally:** `node scripts/validate.mjs` (Node 20.11+). CI runs the same check.
+4. **Validate locally:** `node scripts/validate.mjs` (Node 20.11+). If you edited a `customer-architect`
+   specialist skill, also run `node scripts/sync-cowork-references.mjs` to regenerate the orchestrator's
+   `references/`. CI runs both checks.
 5. **Open a PR.**
 
 ## PR checklist

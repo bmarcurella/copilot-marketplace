@@ -15,3 +15,6 @@ jobs:
           node-version: 22
       - name: Validate marketplace, plugins, and skills
         run: node scripts/validate.mjs
+
+      - name: Check demo-architect references are in sync
+        run: node scripts/sync-cowork-references.mjs --check

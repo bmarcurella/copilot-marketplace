@@ -9,12 +9,16 @@
  *  - every plugin.json skills[] and Cowork manifest agentSkills[] folder exists and contains a
  *    SKILL.md with `name` (matching the folder) and `description` frontmatter
  *  - Cowork manifests parse, use the Unified App Manifest schema, and their icon files exist
+ *  - Cowork skill descriptions fit the 1024-char limit and names are kebab-case (ASKILL-P007)
+ *  - companion files obey the Cowork limits (<=20 per skill, <=5 MB each, <=10 MB total, no hidden
+ *    files, no `..` traversal, safe characters only)
+ *  - every `references/*.md` path named in a SKILL.md body actually exists
  *  - no placeholder values (example.com, {{TOKEN}}) in shippable manifests
  *  - no .zip files tracked in git (built artifacts ship via GitHub Releases)
  */
 
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
@@ -47,6 +51,49 @@ function checkPlaceholders(file) {
   if (token) fail(`${rel(file)}: contains unfilled template token ${token[0]}`);
 }
 
+// Reads `description:` whether written inline or as a `|` / `>` block scalar.
+function readDescription(frontmatter) {
+  const inline = frontmatter.match(/^description:[ \t]*([^|>\s].*)$/m);
+  if (inline) return inline[1].trim();
+  const block = frontmatter.match(/^description:[ \t]*[|>][-+]?[ \t]*\r?\n((?:[ \t]+.*(?:\r?\n|$))+)/m);
+  if (!block) return null;
+  return block[1]
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .join(" ");
+}
+
+// Cowork companion-file rules; see cowork-plugin-development#companion-file-validation.
+const WINDOWS_RESERVED = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\.|$)/i;
+const SAFE_NAME = /^[A-Za-z0-9._! -]+$/;
+const MB = 1024 * 1024;
+
+function walk(dir) {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((d) => {
+    const full = path.join(dir, d.name);
+    return d.isDirectory() ? walk(full) : [full];
+  });
+}
+
+function checkCompanionFiles(skillDir) {
+  const companions = walk(skillDir).filter((f) => path.basename(f) !== "SKILL.md");
+  if (companions.length > 20) {
+    fail(`${rel(skillDir)}: ${companions.length} companion files (max 20)`);
+  }
+  let total = 0;
+  for (const file of companions) {
+    const base = path.basename(file);
+    const size = statSync(file).size;
+    total += size;
+    if (size > 5 * MB) fail(`${rel(file)}: companion file exceeds 5 MB`);
+    if (base.startsWith(".")) fail(`${rel(file)}: hidden companion files are not allowed`);
+    if (!SAFE_NAME.test(base)) fail(`${rel(file)}: unsafe characters in companion file name`);
+    if (WINDOWS_RESERVED.test(base)) fail(`${rel(file)}: Windows reserved file name`);
+  }
+  if (total > 10 * MB) fail(`${rel(skillDir)}: companion files total ${(total / MB).toFixed(1)} MB (max 10 MB)`);
+}
+
 function checkSkill(skillDir, owner) {
   const skillMd = path.join(skillDir, "SKILL.md");
   if (!existsSync(skillMd)) {
@@ -59,13 +106,36 @@ function checkSkill(skillDir, owner) {
     fail(`${rel(skillMd)}: missing YAML frontmatter (--- block)`);
     return;
   }
+  const folder = path.basename(skillDir);
   const name = fm[1].match(/^name:\s*(.+)$/m)?.[1]?.trim();
-  const description = fm[1].match(/^description:\s*(.+)$/m)?.[1]?.trim();
+  const description = readDescription(fm[1]);
+
   if (!name) fail(`${rel(skillMd)}: frontmatter missing "name"`);
   if (!description) fail(`${rel(skillMd)}: frontmatter missing "description"`);
-  if (name && name !== path.basename(skillDir)) {
-    fail(`${rel(skillMd)}: frontmatter name "${name}" does not match folder "${path.basename(skillDir)}"`);
+  if (name && name !== folder) {
+    fail(`${rel(skillMd)}: frontmatter name "${name}" does not match folder "${folder}"`);
   }
+  // ASKILL-P007: kebab-case, no leading/trailing/consecutive hyphens.
+  if (name && !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(name)) {
+    fail(`${rel(skillMd)}: name "${name}" is not kebab-case`);
+  }
+  if (name && name.length > 64) fail(`${rel(skillMd)}: name exceeds 64 characters`);
+  if (description && description.length > 1024) {
+    fail(`${rel(skillMd)}: description is ${description.length} chars (max 1024)`);
+  }
+
+  // Every concrete references/<file>.<ext> named in the body must exist, and must not escape the skill
+  // folder. Globs (`references/*`) are prose, not paths, so they're skipped.
+  const body = text.slice(fm[0].length);
+  for (const [, refPath] of body.matchAll(/`(references\/[A-Za-z0-9._/-]+\.[A-Za-z0-9]+)`/g)) {
+    if (refPath.includes("..")) {
+      fail(`${rel(skillMd)}: reference "${refPath}" uses path traversal (not allowed in companion files)`);
+    } else if (!existsSync(path.join(skillDir, refPath))) {
+      fail(`${rel(skillMd)}: references "${refPath}" but that file does not exist`);
+    }
+  }
+
+  checkCompanionFiles(skillDir);
 }
 
 // --- CLI plugins + marketplace catalog ---------------------------------------------------------
