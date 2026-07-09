@@ -4,12 +4,13 @@ description: |
   Decides the Microsoft architecture and design for a customer scenario — 2-3 compared options, a justified
   recommendation, a target architecture, and a phased build plan. Use when the user asks to "architect this",
   "design a solution", "what's the best Microsoft approach for...", "how should we host this", "which Azure
-  services should we use", "compare options", or "design the integration with Copilot". To generate the
-  actual agent or MCP files, use agent-scaffolder instead.
+  services should we use", "compare options", or "design the integration with Copilot". To generate the actual
+  agent or MCP files, use agent-scaffolder. For a complete end-to-end demo package — architecture plus demo
+  plan, demo data, and deliverables — use demo-architect.
 license: MIT
 metadata:
   author: "Brandon Marcurella"
-  version: "1.0"
+  version: "1.1.0"
 ---
 
 # Solution Architect
@@ -23,17 +24,20 @@ Turns a customer scenario into a grounded, decision-ready Microsoft architecture
 - A target architecture: component inventory, data/identity flow, and integration points
 - A phased build plan (prerequisites → build → demo) naming the services and permissions per phase
 
-## Intake — ask once
+## Intake
 
-Business goal; audience; demo success criteria; constraints (existing stack, security/compliance, budget,
-timeline, region). If any are missing, assume sensible defaults and state them rather than stalling.
+If the conversation already established a brief — customer, audience, key message, constraints — use it and
+do not ask again. Otherwise ask once, batched: business goal; audience; demo success criteria; constraints
+(existing stack, security/compliance, budget, timeline, region). Assume sensible defaults for anything
+unstated and say which defaults you assumed rather than stalling.
 
+<!-- method:start -->
 ## Grounding
 
-Use the **Microsoft Learn MCP** connector for every product claim: the `microsoft_docs_search` tool to find
-services and patterns, and `microsoft_docs_fetch` for specifics (manifest versions, limits, tiers). Never
-invent capabilities. If the connector is off or unavailable, proceed but label each claim "verify". Cite the
-Microsoft Learn URLs.
+Ground every product claim in the `microsoft-learn-mcp` connector: use the `microsoft_docs_search` tool to
+find services and patterns, and `microsoft_docs_fetch` for specifics (manifest versions, limits, tiers).
+Never invent capabilities. If the connector is unavailable, proceed but label each claim "verify". Cite the
+Microsoft Learn URL for each product claim.
 
 ## Workflow
 
@@ -43,8 +47,6 @@ Microsoft Learn URLs.
 4. Describe the target architecture: components, data and identity flow, and integration points (for example,
    Copilot ↔ MCP server, MCP hosting on Azure Container Apps, Salesforce/Teams connectors).
 5. Produce a phased plan: per phase, the Microsoft services, the roles/permissions, and the prerequisites.
-6. When this is part of an end-to-end build, continue directly into the demo plan (`demo-planner`) using this
-   architecture as input — do not stop and wait.
 
 ## Output Format
 
@@ -59,6 +61,9 @@ Microsoft Learn URLs.
 identity flow.
 
 **Plan** — phased table: phase, services, permissions/roles, prerequisites, output.
+<!-- method:end -->
 
-Cite Microsoft Learn URLs for each product claim. Offer to render the brief as a Word doc or PowerPoint via
-`artifact-producer`.
+## When run standalone
+
+After presenting the architecture, offer to render it as a Word design doc or PowerPoint deck via
+`artifact-producer`, or to continue into a full demo package via `demo-architect`.

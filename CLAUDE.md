@@ -32,9 +32,23 @@ from scratch.
 - Every `SKILL.md` needs frontmatter with `name` (matching its folder) and a `description` that
   states when to use it (USE-FOR trigger phrases).
 
+## Cowork orchestration constraint
+
+Cowork skills **cannot invoke each other**, and companion files may not use `..` traversal — so a skill can
+never read a sibling skill's files. An orchestrator skill must carry its own copy of each phase's method
+under its `references/` folder (the sanctioned on-demand layer) and reference those paths explicitly in its
+`SKILL.md` body. Never write "apply the `<other-skill>` method" and expect it to work.
+
+For `customer-architect`, those reference files are **generated** from the `<!-- method:start -->` … 
+`<!-- method:end -->` blocks in the specialist skills. Edit the specialist, then run
+`node scripts/sync-cowork-references.mjs`. CI fails if they drift.
+
 ## Validation and releases
 
-- Run `node scripts/validate.mjs` before finishing any change — CI runs the same script on PRs.
+- Run `node scripts/validate.mjs` and `node scripts/sync-cowork-references.mjs --check` before finishing any
+  change — CI runs both on PRs.
+- Build a Cowork package with `./scripts/build-cowork.sh <plugin>` (zips with `manifest.json` at the zip
+  root, which Cowork requires).
 - **Never commit `.zip` files or secrets.** Built packages go to gitignored `dist/` locally and
   ship via GitHub Releases.
 - Cowork release flow: bump `version` in the plugin's `manifest.json`, then tag

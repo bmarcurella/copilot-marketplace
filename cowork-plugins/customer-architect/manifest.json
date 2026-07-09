@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.29/MicrosoftTeams.schema.json",
   "manifestVersion": "1.29",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "id": "f82606ab-2040-4196-b9fe-f9f4c4d74179",
   "developer": {
     "name": "Brandon Marcurella",
