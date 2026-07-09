@@ -1,0 +1,85 @@
+name: Release Cowork plugin
+
+# Builds an M365 app package (.zip) for a Cowork plugin and attaches it to a GitHub Release.
+# Trigger by pushing a tag like `cowork/customer-architect-v1.0.1`, or run manually
+# (workflow_dispatch) to get the zip as a build artifact without creating a release.
+
+on:
+  push:
+    tags:
+      - "cowork/*-v*"
+  workflow_dispatch:
+    inputs:
+      plugin:
+        description: "Plugin folder name under cowork-plugins/ (e.g. customer-architect)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate repo
+        run: node scripts/validate.mjs
+
+      - name: Resolve plugin name and version
+        id: meta
+        env:
+          INPUT_PLUGIN: ${{ inputs.plugin }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            # cowork/customer-architect-v1.0.1 -> plugin=customer-architect, version=1.0.1
+            REF="${GITHUB_REF_NAME#cowork/}"
+            PLUGIN="${REF%-v*}"
+            VERSION="${REF##*-v}"
+          else
+            PLUGIN="$INPUT_PLUGIN"
+          fi
+          [[ "$PLUGIN" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "::error::invalid plugin name '$PLUGIN'"; exit 1; }
+          test -d "cowork-plugins/$PLUGIN" || { echo "::error::cowork-plugins/$PLUGIN does not exist"; exit 1; }
+          MANIFEST_VERSION=$(MANIFEST="cowork-plugins/$PLUGIN/manifest.json" \
+            node -p "JSON.parse(require('fs').readFileSync(process.env.MANIFEST,'utf8')).version")
+          VERSION="${VERSION:-$MANIFEST_VERSION}"
+          if [[ "$VERSION" != "$MANIFEST_VERSION" ]]; then
+            echo "::error::tag version $VERSION does not match manifest version $MANIFEST_VERSION"
+            exit 1
+          fi
+          echo "plugin=$PLUGIN" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build app package
+        env:
+          PLUGIN: ${{ steps.meta.outputs.plugin }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          mkdir -p dist
+          # M365 app packages require manifest.json at the ZIP ROOT — zip from inside the folder.
+          (cd "cowork-plugins/$PLUGIN" && zip -r "$GITHUB_WORKSPACE/dist/$PLUGIN-$VERSION.zip" . \
+            -x "README.md" -x "*.DS_Store" -x "__MACOSX/*")
+          unzip -l "dist/$PLUGIN-$VERSION.zip"
+          unzip -l "dist/$PLUGIN-$VERSION.zip" | grep -q " manifest.json" \
+            || { echo "::error::manifest.json is not at the zip root"; exit 1; }
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.meta.outputs.plugin }}-${{ steps.meta.outputs.version }}
+          path: dist/*.zip
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PLUGIN: ${{ steps.meta.outputs.plugin }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "dist/$PLUGIN-$VERSION.zip" \
+            --title "$PLUGIN v$VERSION" \
+            --notes "Cowork plugin package for \`$PLUGIN\` v$VERSION. Upload the attached .zip in **Cowork → Customize → Plugins → Upload plugin**."
