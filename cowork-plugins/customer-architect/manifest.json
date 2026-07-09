@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.29/MicrosoftTeams.schema.json",
   "manifestVersion": "1.29",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "id": "f82606ab-2040-4196-b9fe-f9f4c4d74179",
   "developer": {
     "name": "Brandon Marcurella",
-    "websiteUrl": "https://example.com",
-    "privacyUrl": "https://example.com/privacy",
-    "termsOfUseUrl": "https://example.com/terms"
+    "websiteUrl": "https://github.com/bmarcurella/copilot-marketplace",
+    "privacyUrl": "https://github.com/bmarcurella/copilot-marketplace/blob/main/PRIVACY.md",
+    "termsOfUseUrl": "https://github.com/bmarcurella/copilot-marketplace/blob/main/TERMS.md"
   },
   "name": {
     "short": "Customer Architect",

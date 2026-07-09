@@ -1,5 +1,7 @@
 # Build artifacts (ship via GitHub Releases, not git)
 dist/
+*.zip
+__MACOSX/
 
 # Temp / verification files
 _*.txt
