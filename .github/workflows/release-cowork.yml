@@ -2,7 +2,8 @@ name: Release Cowork plugin
 
 # Builds an M365 app package (.zip) for a Cowork plugin and attaches it to a GitHub Release.
 # Trigger by pushing a tag like `cowork/customer-architect-v1.0.1`, or run manually
-# (workflow_dispatch) to get the zip as a build artifact without creating a release.
+# (workflow_dispatch) — a manual run creates the tag and the Release itself, so no local
+# tag push is needed. Either path skips cleanly if the release already exists.
 
 on:
   push:
@@ -68,12 +69,21 @@ jobs:
           path: dist/*.zip
 
       - name: Create GitHub Release
-        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
           PLUGIN: ${{ steps.meta.outputs.plugin }}
           VERSION: ${{ steps.meta.outputs.version }}
         run: |
-          gh release create "$GITHUB_REF_NAME" "dist/$PLUGIN-$VERSION.zip" \
+          TAG="cowork/$PLUGIN-v$VERSION"
+          # A workflow_dispatch release creates the tag, which re-triggers this workflow
+          # on push — that second run (and any re-run) must exit cleanly, not fail.
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "release $TAG already exists — skipping"
+            exit 0
+          fi
+          # --target creates the tag at the built commit when it doesn't exist yet
+          # (workflow_dispatch); it is ignored when the tag already exists (push).
+          gh release create "$TAG" "dist/$PLUGIN-$VERSION.zip" \
+            --target "$GITHUB_SHA" \
             --title "$PLUGIN v$VERSION" \
             --notes "Cowork plugin package for \`$PLUGIN\` v$VERSION. Upload the attached .zip in **Cowork → Customize → Plugins → Upload plugin**."
