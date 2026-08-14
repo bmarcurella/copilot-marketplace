@@ -36,11 +36,27 @@ copilot plugin marketplace browse copilot-marketplace
 copilot plugin install copilot-extension-builder@copilot-marketplace
 ```
 
+**VS Code gets these automatically** (Agent Plugins 1.0, Aug 2026): plugins installed with the CLI
+are discovered from `~/.copilot/installed-plugins/` and appear in the **Agent Plugins – Installed**
+view. To also install *from* VS Code, add the marketplace to your user settings and browse
+`@agentPlugins` in the Extensions view:
+
+```jsonc
+// settings.json (requires "chat.plugins.enabled": true)
+"chat.plugins.marketplaces": ["bmarcurella/copilot-marketplace"]
+```
+
+Opening this repo in VS Code registers the marketplace (searchable via `@agentPlugins`) — the
+workspace registration lives in [.github/copilot/settings.json](.github/copilot/settings.json). It
+deliberately does **not** force-enable any plugin: install once at user level, then enable/disable
+per workspace in the Agent Customizations → Plugins view depending on what you're working on.
+
 ### Available CLI plugins
 
 | Plugin | Description |
 | --- | --- |
 | [`copilot-extension-builder`](cli-plugins/copilot-extension-builder) | Interview-driven builder for agents/skills/plugins across CLI, M365, Cowork, Studio, Foundry. |
+| [`personal-toolkit`](cli-plugins/personal-toolkit) | Personal agents/skills graduated from `library/` — one install serves both CLI and VS Code. |
 
 ## Use a Cowork plugin
 
