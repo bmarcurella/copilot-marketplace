@@ -46,8 +46,10 @@ view. To also install *from* VS Code, add the marketplace to your user settings 
 "chat.plugins.marketplaces": ["bmarcurella/copilot-marketplace"]
 ```
 
-Opening this repo in VS Code will offer these plugins automatically — the workspace recommendations
-live in [.github/copilot/settings.json](.github/copilot/settings.json).
+Opening this repo in VS Code registers the marketplace (searchable via `@agentPlugins`) — the
+workspace registration lives in [.github/copilot/settings.json](.github/copilot/settings.json). It
+deliberately does **not** force-enable any plugin: install once at user level, then enable/disable
+per workspace in the Agent Customizations → Plugins view depending on what you're working on.
 
 ### Available CLI plugins
 

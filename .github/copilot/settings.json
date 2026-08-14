@@ -6,9 +6,5 @@
         "repo": "bmarcurella/copilot-marketplace"
       }
     }
-  },
-  "enabledPlugins": {
-    "copilot-extension-builder@copilot-marketplace": true,
-    "personal-toolkit@copilot-marketplace": true
   }
 }
