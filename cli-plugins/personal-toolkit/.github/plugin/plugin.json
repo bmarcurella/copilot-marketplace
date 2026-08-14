@@ -1,0 +1,17 @@
+{
+  "name": "personal-toolkit",
+  "description": "Brandon's personal agents and skills, graduated from library/ — installed user-level once, available in both the Copilot CLI and VS Code on every machine.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Brandon Marcurella"
+  },
+  "license": "MIT",
+  "keywords": [
+    "personal",
+    "toolkit",
+    "agents",
+    "skills",
+    "agentic-engineering"
+  ],
+  "agents": "./agents"
+}

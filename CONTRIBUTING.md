@@ -35,8 +35,13 @@ servers belong in [mcp-servers](https://github.com/bmarcurella/mcp-servers) inst
 - [ ] No `.zip` files or secrets committed (packages ship via GitHub Releases)
 - [ ] Every `SKILL.md` has `name` (matching its folder) and a `description` with clear
       when-to-use triggers
-- [ ] Versions bumped where changed (CLI plugins: `plugin.json` **and** its marketplace.json entry)
+- [ ] Versions bumped where changed (CLI plugins: `plugin.json` **and** its marketplace.json entry —
+      VS Code only detects plugin updates when the version changes)
 - [ ] README tables updated if you added a plugin
+
+> **Iteration tip:** installed plugin components are cached. After editing a plugin, reinstall it
+> (`copilot plugin install <name>@copilot-marketplace`, or `copilot plugin install <abs-path>` for
+> local dev) and run `/skills reload` in an open session to pick up changes.
 
 ## Releasing a Cowork plugin
 
