@@ -27,7 +27,7 @@
       "name": "personal-toolkit",
       "source": "cli-plugins/personal-toolkit",
       "description": "Brandon's personal agents and skills, graduated from library/ — one user-level install serves both the Copilot CLI and VS Code.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "license": "MIT",
       "keywords": [
         "personal",
