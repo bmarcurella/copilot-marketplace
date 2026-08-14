@@ -13,5 +13,9 @@
     "skills",
     "agentic-engineering"
   ],
-  "agents": "./agents"
+  "agents": "./agents",
+  "skills": [
+    "./skills/marketplace-ops",
+    "./skills/learning-log"
+  ]
 }
