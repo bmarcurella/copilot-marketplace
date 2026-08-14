@@ -14,6 +14,7 @@ copilot plugin install personal-toolkit@copilot-marketplace
 | Component | Type | What it does |
 | --- | --- | --- |
 | `agents/skill-scout.agent.md` | agent | Reviews recent work for recurring workflows and drafts SKILL.md / .agent.md candidates for `library/`. |
+| `agents/demo-brief.agent.md` | agent | One-pass intake interview for a new customer demo — writes a structured `demo-brief.md` that the Cowork `customer-architect` plugin (or repo scaffolding) consumes. |
 
 ## The graduation loop
 
