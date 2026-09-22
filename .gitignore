@@ -1,6 +1,17 @@
 # Build artifacts (ship via GitHub Releases, not git)
 dist/
 
+# Dependencies
+node_modules/
+
+# Local secrets / env files (keep the .example templates tracked)
+.env
+.env.*
+local.env
+*.local.env
+!.env.example
+
+
 # Temp / verification files
 _*.txt
 

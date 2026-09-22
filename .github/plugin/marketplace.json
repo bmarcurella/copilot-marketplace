@@ -22,6 +22,12 @@
         "scaffold",
         "extensibility"
       ]
+    },
+    {
+      "name": "microsoft-frontend",
+      "description": "Design, build, and review polished React and TypeScript frontends with Fluent UI React v9, dashboard patterns, agent UX guidance, and accessibility checks.",
+      "version": "0.1.0",
+      "source": "cli-plugins/microsoft-frontend"
     }
   ]
 }
