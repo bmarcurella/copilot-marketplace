@@ -8,15 +8,19 @@ in agreement.
 
 ## GitHub Copilot CLI / VS Code plugins
 - Creating a plugin: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/plugins-creating
-- Plugin reference (`plugin.json`, `marketplace.json`, locations, precedence): https://docs.github.com/en/copilot/reference/cli-plugin-reference
+- Plugin reference (`plugin.json`, `marketplace.json`, locations, precedence): https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-plugin-reference
 - About plugins: https://docs.github.com/en/copilot/concepts/agents/about-plugins
 - Plugin marketplace: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/plugins-marketplace
+- Finding & installing plugins: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/plugins-finding-installing
+- Adding skills (CLI discovery paths, `/skills`, `copilot skill`): https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills
+- About agent skills (cross-surface: CLI, VS Code, code review, cloud agent): https://docs.github.com/en/copilot/concepts/agents/about-agent-skills
+- Agent Plugins (Open Plugin Spec) 1.0: https://agent-plugins.org/
 
 ## Microsoft 365 Copilot — plugins & declarative agents
 - Plugins overview (MCP + REST): https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/overview-plugins
 - Plugin manifest schema (v2.4): https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/plugin-manifest-2.4
 - Declarative agents overview: https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/overview-declarative-agent
-- Declarative agent manifest (v1.7): https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/declarative-agent-manifest-1.7
+- Declarative agent manifest (v1.8 — latest; adds EmailActions + MeetingActions capabilities): https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/declarative-agent-manifest-1.8
 - Confirmation prompts for plugins: https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/plugin-confirmation-prompts
 - Make an OpenAPI document effective: https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/openapi-document-guidance
 - M365 Agents Toolkit: https://aka.ms/M365AgentsToolkit
@@ -42,4 +46,7 @@ in agreement.
 - MCP specification: https://modelcontextprotocol.io/
 
 ## VS Code customization (primitives)
-- Customize Copilot Chat (instructions, prompts, agents): https://code.visualstudio.com/docs/copilot/copilot-customization
+- Agent plugins in VS Code (auto-discovery of CLI installs, `chat.plugins.marketplaces`, workspace recommendations): https://code.visualstudio.com/docs/agent-customization/agent-plugins
+- Agent skills in VS Code (`.github/skills/`, personal skills): https://code.visualstudio.com/docs/agent-customization/agent-skills
+- Custom agents in VS Code (`.github/agents/*.agent.md`): https://code.visualstudio.com/docs/agent-customization/custom-agents
+- Custom instructions in VS Code (`copilot-instructions.md`, `AGENTS.md`, `*.instructions.md`): https://code.visualstudio.com/docs/agent-customization/custom-instructions

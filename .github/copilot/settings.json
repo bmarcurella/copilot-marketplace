@@ -1,0 +1,10 @@
+{
+  "extraKnownMarketplaces": {
+    "copilot-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "bmarcurella/copilot-marketplace"
+      }
+    }
+  }
+}

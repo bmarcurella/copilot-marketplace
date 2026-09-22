@@ -35,14 +35,18 @@ Legend: ✅ native/first-class · 🔁 via routing to an installed skill · ⛔ 
 | **Knowledge grounding** | instructions/skills | ✅ knowledge sources | ✅ sources/files | ✅ knowledge | ✅ knowledge index |
 | **Adaptive Card responses** | ⛔ | ✅ | partial | ✅ | n/a |
 | **Lifecycle hooks** | ✅ `hooks.json` | ⛔ | ⛔ | ⛔ | ⛔ |
-| **Distribution unit** | plugin + marketplace | Teams/M365 app package | M365 app package (.zip) | Studio publish | Foundry deploy |
-| **Primary manifest** | `plugin.json` | declarative-agent v1.7 + plugin v2.4 | Unified Manifest v1.29 + `SKILL.md` | (Studio config) | `agent.yaml` |
+| **Distribution unit** | plugin + marketplace (CLI installs auto-discovered by VS Code since Agent Plugins 1.0, 2026-08) | Teams/M365 app package | M365 app package (.zip) | Studio publish | Foundry deploy |
+| **Primary manifest** | `plugin.json` | declarative-agent v1.8 + plugin v2.4 | Unified Manifest v1.29 + `SKILL.md` | (Studio config) | `agent.yaml` |
 
 ---
 
 ## Who builds where (audience cues)
 
 - **CLI / VS Code** — you and other developers, in the terminal/editor; code-centric automation, repo-aware.
+  One `copilot plugin install` serves both hosts: VS Code auto-discovers CLI-installed plugins, and can
+  itself install from a marketplace (`chat.plugins.marketplaces` setting, `@agentPlugins` in Extensions).
+  Skills are the most portable primitive — `.github/skills/` in a repo is picked up by the CLI, VS Code,
+  Copilot code review, and the Copilot cloud agent.
 - **M365 Copilot** — knowledge workers in Word/Excel/Teams/M365 Chat; grounded Q&A + actions on business systems.
 - **Cowork** — Cowork users who want extra skills/connectors in their conversations.
 - **Copilot Studio** — low-code makers and business teams; conversational agents with topics + connectors.

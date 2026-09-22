@@ -2,14 +2,14 @@
   "_readme": "Monitored documentation sources for the sync-knowledge skill. Pinned allow-list only. 'change_signal' is 'learn-date' (compare Microsoft Learn updated_at/ms.date/git_commit_id) or 'content-hash' (no date available; hash the fetched content). On first real sync, populate hash/last_known_updated. Keep in agreement with references/links.md.",
   "version": 1,
   "check_interval_days": 14,
-  "last_full_check": "2026-06-25",
+  "last_full_check": "2026-08-14",
   "sources": [
     {
       "id": "cli-plugin-reference",
       "surface": "github-cli",
-      "url": "https://docs.github.com/en/copilot/reference/cli-plugin-reference",
+      "url": "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-plugin-reference",
       "change_signal": "content-hash",
-      "last_checked": "2026-06-25",
+      "last_checked": "2026-08-14",
       "last_known_updated": null,
       "hash": null,
       "affects": [
@@ -25,7 +25,7 @@
       "surface": "github-cli",
       "url": "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/plugins-creating",
       "change_signal": "content-hash",
-      "last_checked": "2026-06-25",
+      "last_checked": "2026-08-14",
       "last_known_updated": null,
       "hash": null,
       "affects": [
@@ -34,11 +34,41 @@
       "notes": "Plugin structure, install/test loop. Content-hash signal."
     },
     {
+      "id": "cli-add-skills",
+      "surface": "github-cli",
+      "url": "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills",
+      "change_signal": "content-hash",
+      "last_checked": "2026-08-14",
+      "last_known_updated": null,
+      "hash": null,
+      "affects": [
+        "skills/build-cli-plugin/SKILL.md",
+        "references/surface-comparison.md",
+        "references/links.md"
+      ],
+      "notes": "Skill discovery order (.github/skills > .agents/skills > .claude/skills > parents > ~/.copilot/skills > ~/.agents/skills > plugins > COPILOT_SKILLS_DIRS), /skills session commands, copilot skill CLI, install --skill --scope user|project. Content-hash signal."
+    },
+    {
+      "id": "vscode-agent-plugins",
+      "surface": "github-cli",
+      "url": "https://code.visualstudio.com/docs/agent-customization/agent-plugins",
+      "change_signal": "content-hash",
+      "last_checked": "2026-08-14",
+      "last_known_updated": null,
+      "hash": null,
+      "affects": [
+        "skills/build-cli-plugin/SKILL.md",
+        "references/surface-comparison.md",
+        "references/links.md"
+      ],
+      "notes": "Agent Plugins 1.0 in VS Code (GA 2026-08-12): auto-discovery of ~/.copilot/installed-plugins, chat.plugins.enabled / chat.plugins.marketplaces / chat.pluginLocations settings, workspace recommendations via .github/copilot/settings.json (extraKnownMarketplaces + enabledPlugins), Open Plugin Spec cross-tool story. Content-hash signal."
+    },
+    {
       "id": "m365-overview-plugins",
       "surface": "m365-copilot",
       "url": "https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/overview-plugins",
       "change_signal": "learn-date",
-      "last_checked": "2026-06-25",
+      "last_checked": "2026-08-14",
       "last_known_updated": "2026-05-12",
       "hash": null,
       "affects": [
@@ -52,62 +82,62 @@
       "surface": "m365-copilot",
       "url": "https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/plugin-manifest-2.4",
       "change_signal": "learn-date",
-      "last_checked": "2026-06-25",
+      "last_checked": "2026-08-14",
       "last_known_updated": null,
       "hash": null,
       "affects": [
         "references/surface-comparison.md",
         "references/links.md"
       ],
-      "notes": "Plugin manifest schema VERSION. Watch for a new version path (e.g., 2.5) replacing 2.4 — high-risk structural change, route through review."
+      "notes": "Plugin manifest schema VERSION. v2.4 still current as of 2026-08-14 (no 2.5). Watch for a new version path replacing 2.4 — high-risk structural change, route through review."
     },
     {
       "id": "m365-declarative-agent-manifest",
       "surface": "m365-copilot",
-      "url": "https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/declarative-agent-manifest-1.7",
+      "url": "https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/declarative-agent-manifest-1.8",
       "change_signal": "learn-date",
-      "last_checked": "2026-06-25",
+      "last_checked": "2026-08-14",
       "last_known_updated": null,
       "hash": null,
       "affects": [
         "references/surface-comparison.md",
         "references/links.md"
       ],
-      "notes": "Declarative agent manifest VERSION. Watch for a new version path (e.g., 1.8) replacing 1.7 — update links and matrix."
+      "notes": "Declarative agent manifest VERSION. v1.8 is current (2026-08-14): adds EmailActions + MeetingActions capabilities; EmbeddedKnowledge.files now required. Watch for 1.9 — update links and matrix on bump."
     },
     {
       "id": "cowork-plugins",
       "surface": "cowork",
       "url": "https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-plugins",
       "change_signal": "learn-date",
-      "last_checked": "2026-06-25",
+      "last_checked": "2026-08-14",
       "last_known_updated": "2026-06-18",
       "hash": null,
       "affects": [
         "skills/build-cowork/SKILL.md",
         "skills/build-cowork/templates/cowork-skill.md"
       ],
-      "notes": "Cowork plugin/skill usage + management. Learn updated_at signal."
+      "notes": "Cowork plugin/skill usage + management: self-service Upload plugin, automatic Claude-plugin package conversion, sharing/re-share to push updates, admin-deployed plugins. Learn updated_at signal."
     },
     {
       "id": "cowork-customize",
       "surface": "cowork",
       "url": "https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-customize",
       "change_signal": "learn-date",
-      "last_checked": "2026-06-25",
+      "last_checked": "2026-08-14",
       "last_known_updated": "2026-06-18",
       "hash": null,
       "affects": [
         "skills/build-cowork/SKILL.md"
       ],
-      "notes": "Cowork Customize page: create-skill (guided) and upload-plugin-package flows. Learn updated_at signal."
+      "notes": "Cowork Customize page (now Plugins + Skills tabs): guided skill creation and upload (.md/.zip/.skill, SKILL.md at archive root; 1 MB per .md, 10 MB compressed/50 MB uncompressed/100 files) and upload-plugin-package flow. Learn updated_at signal."
     },
     {
       "id": "cowork-plugin-development",
       "surface": "cowork",
       "url": "https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-plugin-development",
       "change_signal": "learn-date",
-      "last_checked": "2026-06-25",
+      "last_checked": "2026-08-14",
       "last_known_updated": null,
       "hash": null,
       "affects": [
@@ -118,14 +148,14 @@
         "references/surface-comparison.md",
         "references/links.md"
       ],
-      "notes": "AUTHORITATIVE Cowork plugin package schema: M365 app package (.zip) with Unified App Manifest (current v1.29; v1.28 also accepted) and agentSkills[] + optional agentConnectors[], skills/<name>/SKILL.md (frontmatter name == folder), 192x192 + 32x32 icons, validation rules (ASKILL-*), and the Claude-plugin conversion script. Connector tool discovery: omit mcpToolDescription for dynamic tools/list (requires v1.29); set mcpToolDescription.file for static (works on v1.28). Watch for the next manifest version bump."
+      "notes": "AUTHORITATIVE Cowork plugin package schema: M365 app package (.zip) with Unified App Manifest (current v1.29; v1.28 also accepted) and agentSkills[] + optional agentConnectors[], skills/<name>/SKILL.md (frontmatter name == folder), 192x192 + 32x32 icons, validation rules (ASKILL-*), and the Claude-plugin conversion script. Connector tool discovery: omit mcpToolDescription for dynamic tools/list (requires v1.29); set mcpToolDescription.file for static (works on v1.28). Watch for the next manifest version bump. WATCH (2026-08-14): the doc's sample now pins manifest v1.28 (strict, additionalProperties:false) and says mcpToolDescription is required — in tension with the v1.29 dynamic-discovery path this repo ships and has uploaded successfully (see lessons.md 2026-06-25). Unified manifest v1.30 (Aug 2026) is latest GA but only adds Outlook add-in fields. High-risk: verify against a real upload before changing templates."
     },
     {
       "id": "cowork-elicitation-forms",
       "surface": "cowork",
       "url": "https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-elicitation-forms",
       "change_signal": "learn-date",
-      "last_checked": "2026-06-25",
+      "last_checked": "2026-08-14",
       "last_known_updated": null,
       "hash": null,
       "affects": [

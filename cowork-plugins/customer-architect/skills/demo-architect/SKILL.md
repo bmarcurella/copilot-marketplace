@@ -1,16 +1,17 @@
 ---
 name: demo-architect
 description: |
-  End-to-end conductor for building a customer demo on the Microsoft stack. It gathers the brief once, then
-  drives architecture, design, demo plan, demo data, agent scaffolding, and finished deliverables in one
-  continuous pass instead of stopping after a single artifact. Use when the user asks to "build a demo",
-  "architect and build a customer demo", "put together an end-to-end demo for <customer>", "design and deliver
-  a demo", "create a full demo from scratch", or describes a scenario and wants the whole package rather than
-  one piece. This is the entry point; it sequences the specialist skills.
+  End-to-end conductor for building a customer demo on the Microsoft stack. Gathers the brief once, then runs
+  architecture, design, demo plan, demo data, agent scaffolding, and finished deliverables in one continuous
+  pass instead of stopping after a single artifact. Use when the user asks to "build a demo", "architect and
+  build a customer demo", "put together an end-to-end demo for <customer>", "design and deliver a demo",
+  "create a full demo from scratch", or describes a scenario and wants the whole package rather than one
+  piece. For a single piece only, use solution-architect, demo-planner, demo-data-builder, agent-scaffolder,
+  or artifact-producer directly.
 license: MIT
 metadata:
   author: "Brandon Marcurella"
-  version: "1.0"
+  version: "1.1.0"
 ---
 
 # Demo Architect (orchestrator)
@@ -18,22 +19,37 @@ metadata:
 ## What This Skill Does
 
 Owns the full customer-demo lifecycle and produces one coherent **demo package** — architecture + design,
-build-and-run plan, demo data, agent scaffold, and customer-ready Word/PowerPoint/Excel deliverables. It
-sequences the specialist skills so the work does not stall after one step.
+build-and-run plan, demo data, agent scaffold, and customer-ready Word/PowerPoint/Excel deliverables.
 
-This is the **entry point**. The specialists (`solution-architect`, `demo-planner`, `demo-data-builder`,
-`agent-scaffolder`, `artifact-producer`) define *how* each phase is done; this skill decides *what runs, in
-what order*, and keeps going to the end.
+This skill is self-contained: the method for each phase lives in its own reference file under `references/`,
+listed below. Read the reference file for a phase when you reach that phase — not before. Do not wait for
+another skill to activate; you already have everything you need.
+
+## Additional Resources
+
+- **`references/architecture-method.md`** — how to produce the architecture options, recommendation, target
+  architecture, and phased plan.
+- **`references/demo-plan-method.md`** — how to produce the scene-by-scene runbook with talk-track, timings,
+  and fallbacks.
+- **`references/demo-data-method.md`** — how to design and generate the synthetic demo datasets.
+- **`references/agent-scaffold-method.md`** — how to scaffold an agent or MCP server, including tool
+  annotations.
+- **`references/deliverables-method.md`** — how to structure and produce the Word/PowerPoint/Excel files.
 
 ## Before you start
 
-Ground the architecture in current docs via the **Microsoft Learn MCP** connector. If it is not enabled in
-**Sources & Skills**, ask the user to turn it on. If they decline or it is unavailable, proceed but mark every
-product or version claim as an assumption to verify, and say so up front.
+Ground the architecture in current docs via the `microsoft-learn-mcp` connector (tools:
+`microsoft_docs_search`, `microsoft_docs_fetch`, `microsoft_code_sample_search`). If it is not enabled in
+**Sources & Skills**, ask the user to turn it on. If they decline or it is unavailable, proceed but mark
+every product or version claim as an assumption to verify, and say so up front.
+
+File creation is delegated to Cowork's built-in **Word**, **Excel**, and **PowerPoint** skills. Finished
+files land in the conversation's output folder and the OneDrive **Cowork** folder.
 
 ## Intake — ask once, batched
 
-Collect these in a single prompt. Fill gaps with sensible defaults and state them rather than asking again:
+Collect these in a single prompt. Fill gaps with sensible defaults and state them rather than asking again.
+This is the **only** intake for the whole run; every later phase inherits this brief.
 
 1. Customer / scenario and the business problem to solve.
 2. Audience and technical depth (exec, IT decision-maker, developer).
@@ -47,13 +63,15 @@ Collect these in a single prompt. Fill gaps with sensible defaults and state the
 1. Run the intake above and restate the brief in 3-5 lines for confirmation.
 2. Present a one-screen **plan of record** (the phases below and what each will produce), then proceed
    without waiting unless the user explicitly asked to review between phases.
-3. **Architecture & design** — apply the `solution-architect` method: 2-3 grounded options, a recommended
-   option, the target architecture, and a phased build plan.
-4. **Demo plan** — apply `demo-planner`: scene-by-scene runbook with talk-track, setup, timings, fallbacks.
-5. **Demo data** — apply `demo-data-builder`: generate the datasets the runbook references, as real files.
-6. **Agent scaffold** — apply `agent-scaffolder` *only if* the demo includes a custom agent or MCP server.
-7. **Deliverables** — apply `artifact-producer`: produce the requested Word/PowerPoint/Excel files.
-8. Do not stop between phases to ask "should I continue?" — complete the package, then summarize.
+3. **Architecture & design** — read `references/architecture-method.md` and follow it.
+4. **Demo plan** — read `references/demo-plan-method.md` and follow it, using the architecture as input.
+5. **Demo data** — read `references/demo-data-method.md` and follow it, generating the datasets the runbook
+   references as real files.
+6. **Agent scaffold** — *only if* the demo includes a custom agent or MCP server: read
+   `references/agent-scaffold-method.md` and follow it. Otherwise skip this phase and say you skipped it.
+7. **Deliverables** — read `references/deliverables-method.md` and follow it to produce the requested files.
+8. Do not stop between phases to ask "should I continue?" and do not re-run intake. Complete the package,
+   then summarize.
 
 ## Output Format
 

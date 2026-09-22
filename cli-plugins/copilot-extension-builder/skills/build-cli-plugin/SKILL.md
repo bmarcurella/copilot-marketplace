@@ -66,6 +66,7 @@ Start from `templates/plugin.json`. Required: `name`. Add only what you use:
 | `agents` | bundling agents | `"./agents"` — or omit to use the default `agents/` |
 | `hooks` | bundling hooks | `"./hooks/hooks.json"` |
 | `mcpServers` | bundling MCP | `"./.mcp.json"` |
+| `$schema` | opting into the Agent Plugins (Open Plugin Spec) 1.0 cross-tool format | the canonical spec schema URL (see https://agent-plugins.org) — additive on top of normal loading; spec-mode plugins may use dots in names, and spec-only clients load just the portable parts (`skills/` + `mcp.json`) |
 | `keywords`, `repository`, `homepage`, `category`, `tags` | optional metadata | as needed |
 
 `agents/` and `skills/` are auto-discovered at the default paths, so you can omit those fields unless
@@ -90,7 +91,8 @@ In an interactive session, verify components:
 ```
 
 > Installed components are **cached**. After editing the source, run
-> `copilot plugin install ./{{plugin-name}}` again to pick up changes.
+> `copilot plugin install ./{{plugin-name}}` again to pick up changes, then `/skills reload` in an
+> open session so re-loaded skills are usable without restarting.
 
 Remove with `copilot plugin uninstall {{plugin-name}}` (use the manifest `name`, not the path).
 
@@ -116,6 +118,13 @@ copilot plugin marketplace add "C:\abs\path\to\{{plugin-name}}"
 
 `marketplace.json` `source` is `"."` when the plugin is the repo root; use a subfolder path
 (e.g., `"plugins/{{plugin-name}}"`) if it lives in a larger repo.
+
+**VS Code (since Agent Plugins 1.0, 2026-08):** plugins installed with the CLI are auto-discovered by
+VS Code from `~/.copilot/installed-plugins/` — no extra step. Users can also install straight from
+VS Code by adding the marketplace repo to the `chat.plugins.marketplaces` setting (requires
+`chat.plugins.enabled`) and browsing `@agentPlugins` in the Extensions view. A repo can recommend its
+own plugins to anyone opening it via `.github/copilot/settings.json` with `extraKnownMarketplaces` and
+`enabledPlugins`.
 
 ---
 

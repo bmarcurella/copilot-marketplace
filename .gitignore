@@ -1,5 +1,7 @@
 # Build artifacts (ship via GitHub Releases, not git)
 dist/
+*.zip
+__MACOSX/
 
 # Dependencies
 node_modules/
