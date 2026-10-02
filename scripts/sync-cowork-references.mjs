@@ -32,9 +32,12 @@ const PHASES = [
 const START = "<!-- method:start -->";
 const END = "<!-- method:end -->";
 
+// Normalize line endings so Windows checkouts (core.autocrlf=true) compare equal to CI's LF files.
+const readText = (file) => readFileSync(file, "utf8").replace(/\r\n/g, "\n");
+
 function extractMethod(skill) {
   const src = path.join(plugin, "skills", skill, "SKILL.md");
-  const text = readFileSync(src, "utf8");
+  const text = readText(src);
   const start = text.indexOf(START);
   const end = text.indexOf(END);
   if (start === -1 || end === -1 || end < start) {
@@ -65,7 +68,7 @@ mkdirSync(path.join(orchestrator, "references"), { recursive: true });
 for (const phase of PHASES) {
   const dest = path.join(orchestrator, "references", phase.file);
   const next = render(phase);
-  const current = existsSync(dest) ? readFileSync(dest, "utf8") : null;
+  const current = existsSync(dest) ? readText(dest) : null;
   if (current === next) continue;
   if (check) {
     stale.push(path.relative(root, dest));
