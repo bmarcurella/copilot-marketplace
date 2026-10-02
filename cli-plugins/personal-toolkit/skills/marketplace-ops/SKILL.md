@@ -28,10 +28,11 @@ process. House rules: work on branches (never main), every commit is reviewed, r
 
 ## Graduate an item into personal-toolkit
 
-1. Move (don't copy) the item: agents → `cli-plugins/personal-toolkit/agents/<name>.agent.md`;
+1. Move (don't copy) the item: agents → `cli-plugins/personal-toolkit/com.github.copilot/agents/<name>.agent.md`;
    skills → `cli-plugins/personal-toolkit/skills/<name>/SKILL.md` (frontmatter `name` must equal
-   the folder name, kebab-case) and list new skill folders in the plugin's `skills` array.
-2. Bump `version` in `cli-plugins/personal-toolkit/.github/plugin/plugin.json` **and** in its
+   the folder name, kebab-case). The plugin uses the Agent Plugins 1.0 layout, so both folders are
+   discovered automatically — don't add `skills` or `agents` fields to `plugin.json`.
+2. Bump `version` in `cli-plugins/personal-toolkit/plugin.json` **and** in its
    `.github/plugin/marketplace.json` entry — they must match (the validator enforces it, and
    VS Code only detects updates on a version change).
 3. Update the plugin README contents table. Run `node scripts/validate.mjs`.

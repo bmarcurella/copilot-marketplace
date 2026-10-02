@@ -25,10 +25,10 @@ use them (or the installed `copilot-extension-builder` plugin) rather than writi
 from scratch.
 
 - **CLI plugin** → `cli-plugins/<name>/`, then **register it** in `.github/plugin/marketplace.json`
-  with `"source": "cli-plugins/<name>"` and a matching version. Manifest format:
-  - skills/MCP only → **Agent Plugins 1.0**: root `plugin.json` with the agent-plugins.org `$schema`,
-    metadata fields only, skills in `skills/`, MCP in root `mcp.json` (preferred for new plugins).
-  - agents, hooks, or custom paths → **legacy** `.github/plugin/plugin.json` with component fields.
+  with `"source": "cli-plugins/<name>"` and a matching version. Use the **Agent Plugins 1.0** layout:
+  root `plugin.json` with the agent-plugins.org `$schema` and metadata fields only; skills in
+  `skills/`, MCP in root `mcp.json`, and Copilot-only agents/hooks/commands under `com.github.copilot/`
+  (`agents/*.agent.md`, `hooks/hooks.json`). No component path fields in the manifest.
 - **Cowork plugin** → `cowork-plugins/<name>/` with `manifest.json` (Unified App Manifest v1.29),
   `color.png` (192×192), `outline.png` (32×32), and `skills/<skill>/SKILL.md`. To reuse a CLI
   plugin's skills, generate it with `atk import openplugin` (see CONTRIBUTING.md) rather than by hand.

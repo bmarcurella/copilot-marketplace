@@ -26,15 +26,25 @@ Templates are in `templates/` (sibling to this file). Copy them and replace `{{P
 - **distribute?** — also generate `marketplace.json`.
 - **output location** — default: a sibling folder in the current workspace named after the plugin.
 
-Then pick the **manifest format** from the components:
+Then pick the **manifest format**. Default to **Agent Plugins 1.0** for every plugin: it's the cross-tool
+spec, VS Code and the Copilot CLI both load its Copilot-only parts from `com.github.copilot/` (agents,
+hooks, slash commands, automation templates), and `atk import openplugin` can convert it to a Cowork
+package. Use **legacy** only when the user needs manifest-configured component paths (several skill
+roots, an `extensions` directory list, inline hooks or MCP config) or targets a client without Agent
+Plugins support.
 
-| Components | Format | Why |
-| --- | --- | --- |
-| Skills and/or MCP servers only | **Agent Plugins 1.0** (default) | Cross-tool spec; also convertible to a Cowork package with `atk import openplugin` |
-| Any agents, hooks, LSP servers, or custom component paths | **Legacy** | Manifest path fields (`agents`, `hooks`, …) only exist in the legacy format |
+| Components | Agent Plugins 1.0 location |
+| --- | --- |
+| Skills | `skills/<name>/SKILL.md` (portable) |
+| MCP servers | root `mcp.json` with the matching spec `$schema` (portable) |
+| Agents | `com.github.copilot/agents/<name>.agent.md` |
+| Hooks | `com.github.copilot/hooks/hooks.json` — use `${PLUGIN_ROOT}` for script paths |
+| Slash commands / LSP | `com.github.copilot/commands/`, `com.github.copilot/lsp.json` |
+| Automation templates (VS Code) | `com.github.copilot/automations/<name>.automation.md` |
 
-Agent Plugins can carry Copilot-only agents/hooks under `com.github.copilot/`, but prefer legacy for
-those unless the user wants spec portability for the skills.
+Verified 2026-10-02 with the Copilot CLI (`--plugin-dir`, isolated `COPILOT_HOME`): skills, agents
+(`<plugin>:<agent>` IDs), and a `SessionStart` hook all loaded from these locations, and `${PLUGIN_ROOT}`
+expanded to the plugin root in the hook command.
 
 ---
 
@@ -53,11 +63,12 @@ Create only the folders for the components you chose.
 ├── mcp.json                 # optional; fixed location, needs the matching spec $schema
 ├── com.github.copilot/      # optional Copilot-only components
 │   ├── agents/{{agent-name}}.agent.md
-│   └── hooks/hooks.json
+│   ├── hooks/hooks.json     # commands can reference ${PLUGIN_ROOT}/scripts/...
+│   └── commands/
 └── README.md
 ```
 
-**Legacy** (start from `templates/plugin.json`):
+**Legacy** (only when Step 1 calls for it; start from `templates/plugin.json`):
 
 ```text
 {{plugin-name}}/

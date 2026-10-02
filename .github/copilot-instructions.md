@@ -7,8 +7,8 @@ SKILL.md files, templates). Runnable MCP servers live in the separate
 ## Structure: one top-level folder per distribution surface
 
 - `cli-plugins/` — GitHub Copilot CLI / VS Code plugins, served by the git marketplace catalog at
-  `.github/plugin/marketplace.json`. Manifest is either a root `plugin.json` (Agent Plugins 1.0 —
-  preferred for skills/MCP-only plugins) or `.github/plugin/plugin.json` (legacy — for agents/hooks).
+  `.github/plugin/marketplace.json`. All use the Agent Plugins 1.0 layout: root `plugin.json`
+  (metadata only), `skills/`, optional `mcp.json`, Copilot-only parts in `com.github.copilot/`.
 - `cowork-plugins/` — M365 Copilot Cowork app packages (`manifest.json` v1.29 + icons +
   `skills/<name>/SKILL.md`), shipped as `.zip` on GitHub Releases — never via the marketplace.
 - `library/` — standalone reusable skills/agents/prompts/instructions; inert here.

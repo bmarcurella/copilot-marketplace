@@ -64,8 +64,8 @@ copilot plugin install copilot-extension-builder@copilot-extension-builder-marke
 
 Consumers get future improvements with `copilot plugin update copilot-extension-builder`.
 
-> Direct `copilot plugin install OWNER/REPO` still works but is deprecated. Before publishing, set
-> `author`, and add `repository` + `homepage` in [.github/plugin/plugin.json](.github/plugin/plugin.json).
+> Direct `copilot plugin install OWNER/REPO` still works but is deprecated. Before publishing, check
+> `author`, `repository`, and `homepage` in [plugin.json](plugin.json).
 > The marketplace entry's `source` is `"."`, which assumes this folder is the repository root. If you keep
 > it as a subfolder of a larger repo, change `source` to that subfolder path (for example
 > `"plugins/copilot-extension-builder"`).
@@ -83,16 +83,15 @@ Consumers get future improvements with `copilot plugin update copilot-extension-
 
 ```text
 copilot-extension-builder/
-├── .github/plugin/
-│   ├── plugin.json            # plugin manifest
-│   └── marketplace.json       # distribution catalog
+├── plugin.json                # Agent Plugins 1.0 manifest (metadata only)
 ├── skills/
 │   ├── copilot-extension-builder/   # router + freshness gate (entry point)
 │   ├── build-cli-plugin/            # GitHub CLI plugin packaging (+ templates/)
 │   ├── build-cowork/                # Cowork skill / package (+ templates/)
 │   └── sync-knowledge/              # self-update engine
+├── com.github.copilot/
+│   └── hooks/hooks.json       # SessionStart staleness reminder (runs ${PLUGIN_ROOT}/scripts/check-freshness.*)
 ├── references/                # decision framework, capability matrix, routing, links, sources, lessons
-├── hooks/hooks.json           # SessionStart staleness reminder (optional)
 ├── scripts/                   # check-freshness.ps1 / .sh
 ├── CHANGELOG.md               # dated record of knowledge-sync changes
 └── README.md

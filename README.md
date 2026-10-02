@@ -19,10 +19,10 @@ reusable building blocks.
 ```text
 copilot-marketplace/
 ├── .github/plugin/marketplace.json   # the Copilot CLI catalog (lists every cli-plugins/* entry)
-├── cli-plugins/                      # installable via the marketplace
-│   └── copilot-extension-builder/    #   legacy manifest: .github/plugin/plugin.json (uses hooks)
-│   └── microsoft-frontend/           #   Agent Plugins 1.0: root plugin.json + skills/
-│   └── personal-toolkit/             #   legacy manifest: .github/plugin/plugin.json (uses agents)
+├── cli-plugins/                      # installable via the marketplace — all Agent Plugins 1.0
+│   └── copilot-extension-builder/    #   plugin.json, skills/, com.github.copilot/hooks/
+│   └── microsoft-frontend/           #   plugin.json, skills/
+│   └── personal-toolkit/             #   plugin.json, skills/, com.github.copilot/agents/
 ├── cowork-plugins/                   # M365 app packages → build .zip → GitHub Release
 │   └── customer-architect/
 ├── library/                          # reusable building blocks (inert here)
@@ -111,15 +111,18 @@ copilot plugin install copilot-extension-builder@copilot-marketplace
 ```
 
 When you add a new **CLI plugin**, also add an entry to `.github/plugin/marketplace.json` with
-`"source": "cli-plugins/<name>"`. Pick the manifest format by what the plugin contains:
+`"source": "cli-plugins/<name>"`. Every plugin here uses the [Agent Plugins 1.0](https://agent-plugins.org/)
+layout:
 
-| Plugin contains | Format | Manifest |
-| --- | --- | --- |
-| Skills and/or MCP servers only | **Agent Plugins 1.0** (preferred) | root `plugin.json` with the spec `$schema`; fixed `skills/` and `mcp.json` |
-| Agents, hooks, or custom component paths | legacy | `.github/plugin/plugin.json` with `agents` / `skills` / `hooks` fields |
+```text
+cli-plugins/<name>/
+├── plugin.json              # metadata only, with the agent-plugins.org $schema
+├── skills/<skill>/SKILL.md  # portable
+├── mcp.json                 # portable (optional; needs the matching spec $schema)
+└── com.github.copilot/      # Copilot-only (optional): agents/, hooks/hooks.json, commands/, automations/
+```
 
-Agent Plugins can still carry Copilot-only agents and hooks under `com.github.copilot/`, but the two
-existing legacy plugins don't need to move.
+Component locations are fixed, so there are no `skills` / `agents` / `hooks` fields in the manifest.
 
 ### Ship the same skills to Cowork
 
@@ -161,7 +164,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full checklist.
 
 ## Conventions
 
-- **CLI plugin** folders contain a root `plugin.json` (Agent Plugins 1.0) or `.github/plugin/plugin.json` (legacy) plus their components.
+- **CLI plugin** folders use the Agent Plugins 1.0 layout: root `plugin.json`, `skills/`, optional `mcp.json`, and Copilot-only components under `com.github.copilot/`.
 - **Cowork plugin** folders contain `manifest.json` (Unified App Manifest v1.29), `color.png`, `outline.png`, and `skills/<name>/SKILL.md`.
 - **Library** items are standalone and inert here; bundle them into a plugin or copy into a project's `.github/` (see [library/README.md](library/README.md)).
 - Built `.zip` artifacts are **never committed** — they go to `dist/` (gitignored) locally and ship via GitHub Releases built by CI.

@@ -18,15 +18,17 @@ servers belong in [mcp-servers](https://github.com/bmarcurella/mcp-servers) inst
 3. **Place it by surface:**
    - GitHub Copilot CLI / VS Code plugin → `cli-plugins/<name>/` and **add an entry** to
      `.github/plugin/marketplace.json` (`"source": "cli-plugins/<name>"`, version matching
-     the plugin's manifest). Choose the manifest format:
-     - **Skills and/or MCP servers only → Agent Plugins 1.0** (preferred): root `plugin.json` with
-       `"$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"`, skills in `skills/`,
-       MCP servers in a root `mcp.json` with the matching spec `$schema`. Only metadata fields are
-       allowed in the manifest (`name`, `version`, `description`, `author`, `homepage`, `repository`,
-       `license`, `keywords`, `extensions`); component paths are ignored. Copilot-only agents and hooks
-       go in `com.github.copilot/agents/` and `com.github.copilot/hooks/hooks.json`.
-     - **Agents, hooks, or custom component paths → legacy**: `.github/plugin/plugin.json` with
-       `agents` / `skills` / `hooks` / `mcpServers` fields (like `personal-toolkit`).
+     the plugin's manifest). Use the **Agent Plugins 1.0** layout: root `plugin.json` with
+     `"$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"` and metadata only
+     (`name`, `version`, `description`, `author`, `homepage`, `repository`, `license`, `keywords`,
+     `extensions`). Components live in fixed folders, not manifest fields:
+     - `skills/<skill>/SKILL.md` and a root `mcp.json` (with the matching spec `$schema`) — portable.
+     - `com.github.copilot/agents/*.agent.md`, `com.github.copilot/hooks/hooks.json`,
+       `com.github.copilot/commands/`, `com.github.copilot/automations/` — Copilot-only. Hook commands
+       can use `${PLUGIN_ROOT}` for files in the plugin.
+
+     The validator still accepts the older `.github/plugin/plugin.json` format, but every plugin here
+     has moved off it.
    - Cowork plugin → `cowork-plugins/<name>/` (`manifest.json` v1.29, `color.png` 192×192,
      `outline.png` 32×32, `skills/<skill>/SKILL.md`). Do **not** add it to marketplace.json —
      Cowork packages ship as Release zips. If the skills already exist in a CLI plugin, generate the
