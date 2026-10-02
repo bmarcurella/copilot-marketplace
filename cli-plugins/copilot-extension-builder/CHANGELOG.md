@@ -13,6 +13,32 @@ Format:
 - [source-id] what changed -> what was edited. (source: URL) [auto|review]
 ```
 
+## 2026-10-02
+- [cowork-plugin-development] **Resolves the 2026-08-14 review item.** Doc now leads with the Agents
+  Toolkit CLI: `atk import openplugin` (CLI ≥1.1.12; Claude/Cursor/`.plugin` → `atk` project, devPreview
+  manifest, placeholder `referenceId`, UUID v5 id), `atk export openplugin`, `atk package`; PowerShell
+  conversion script is now "legacy". `mcpToolDescription` is optional ("Cowork discovers tools dynamically and
+  doesn't use this file"). ApiKey auth not yet supported in Cowork; omitting `authorization` (implicit DCR) is
+  Cowork-only; OAuth registrations should target "Any Microsoft 365 Organization". New: MCP annotations drive
+  confirmation (unannotated = destructive), `contentEncoding: base64` file inputs, `copilot-cowork` client
+  identity, dev-tunnel local testing, tenant publish path now Manage apps → Upload custom app → Add agent →
+  updated `build-cowork/SKILL.md` and `templates/plugin-package/README.md`. Templates kept on **v1.29**:
+  verified the published v1.28 schema still *requires* `mcpToolDescription` (v1.29/v1.30 don't), so the doc's
+  v1.28 sample is not safe for dynamic discovery. (source: https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-plugin-development) [review → applied]
+- [m365-agent-connectors] New auth types `DynamicClientRegistration` (explicit, with `referenceId`; server
+  must return `client_id` + `client_secret`) and `AzureKeyVault` (schema v1.29+); OAuth redirect URI
+  `https://teams.microsoft.com/api/platform/v1.0/oAuthRedirect` → auth table in `build-cowork`, links;
+  source added to `sources.json`. (source: https://learn.microsoft.com/en-us/microsoftteams/platform/m365-apps/agent-connectors) [auto]
+- [federated-connectors] Added custom federated connectors (admin-created; read-only tools; OAuth requires
+  client ID + secret) and contrasted them with package `agentConnectors[]` in `build-cowork` → new links
+  section; source added to `sources.json`; lesson recorded. (source: https://learn.microsoft.com/en-us/microsoft-365/copilot/connectors/set-up-custom-federated-connectors) [auto]
+- [m365-overview-plugins, m365-plugin-manifest, m365-declarative-agent-manifest] Pages updated 2026-09-30; no
+  new version paths (plugin 2.5, DA 1.9/1.10, app manifest v1.31 all 404) → `last_known_updated` only. [auto]
+- [cowork-plugins, cowork-customize, cowork-elicitation-forms] Pages updated 2026-09-14/15; no impact found on
+  templates → `last_known_updated` only. [auto]
+- [cli-plugin-reference, cli-plugins-creating, cli-add-skills, vscode-agent-plugins] First content-hash
+  baseline recorded (no prior hash, so change can't be determined this run). [auto]
+
 ## 2026-08-14
 - [cli-plugin-reference] Doc URL moved under `/reference/copilot-cli-reference/` → updated `sources.json`
   and `links.md`. Verified this repo's `.github/plugin/` layout is still third in the documented manifest

@@ -8,7 +8,7 @@ MCP connectors. Format per
 
 ```text
 {{plugin-name}}/
-├── manifest.json          # M365 Unified App Manifest v1.29
+├── manifest.json          # M365 Unified App Manifest v1.29 (v1.30 also valid)
 ├── color.png              # 192×192 color icon
 ├── outline.png            # 32×32 outline icon
 └── skills/
@@ -33,29 +33,40 @@ MCP connectors. Format per
    Compress-Archive -Path manifest.json, color.png, outline.png, skills -DestinationPath ..\{{plugin-name}}.zip -Force
    ```
 
+   Add `tools` to `-Path` if a connector uses `mcpToolDescription.file`. In an Agents Toolkit project, use
+   `atk package --manifest-file ./appPackage/manifest.json --output-package-file ./appPackage/build/appPackage.zip --output-folder ./appPackage/build`
+   so `${{ENV_VAR}}` placeholders (e.g. the OAuth `referenceId`) are resolved.
+
 ## Connector auth (when used)
 
 | `authorization.type` | Use | `referenceId` |
 | --- | --- | --- |
-| `None` | public/anonymous MCP server | omit |
-| `OAuthPluginVault` | OAuth 2.0 server | required — credential registration ID in the Enterprise Token Store |
-| `ApiKeyPluginVault` | API-key server | required — as above |
+| `None` | public/anonymous MCP server | must be omitted |
+| `OAuthPluginVault` | OAuth 2.0 server (recommended); public client + PKCE is fine | OAuth client registration ID |
+| `ApiKeyPluginVault` | API-key server — **not supported in Cowork yet** | API key registration ID |
+| `DynamicClientRegistration` | server has an RFC 7591 registration endpoint returning `client_id` + `client_secret` | DCR config ID (Developer Portal) |
+| `AzureKeyVault` | secret in your own Key Vault — **manifest v1.29+** | Key Vault secret registration ID |
 
-Servers that support Dynamic Client Registration can omit `authorization` entirely. **No secrets in the
-manifest** — only the `referenceId` reference.
+Omitting `authorization` entirely makes **Cowork** use DCR on its own; that shortcut isn't supported in
+Copilot Chat. For OAuth, set the registration's usage to **Any Microsoft 365 Organization** for cross-tenant
+use and allow the redirect URI `https://teams.microsoft.com/api/platform/v1.0/oAuthRedirect`.
+**No secrets in the manifest** — only the `referenceId` reference.
 
 ## Tool discovery
 
 - **Dynamic** (recommended) — omit `mcpToolDescription`; agents call the server's `tools/list` at runtime.
-  **Requires manifest v1.29+** (on v1.28 a `remoteMcpServer` without `mcpToolDescription` is rejected).
-- **Static** — set `mcpToolDescription.file` to a bundled JSON of tool definitions; valid on v1.28.
+  **Requires manifest v1.29+** (the v1.28 schema still requires `mcpToolDescription`).
+- **Static** — set `mcpToolDescription.file` to a bundled JSON of tool definitions (must be in the zip).
+  Cowork ignores it and discovers dynamically anyway.
+- Give every tool MCP `annotations` (`readOnlyHint`, `destructiveHint`, `title`); unannotated tools are
+  treated as destructive and prompt for confirmation.
 
 ## Install / test / publish
 
 - **Cowork:** Customize → Plugins → **Upload plugin** → select the `.zip`.
 - **Sideload (personal):** `npm i -g @microsoft/m365agentstoolkit-cli` → `atk auth login` →
   `atk install --file-path "..\{{plugin-name}}.zip" --scope Personal`.
-- **Tenant:** M365 admin center → Agents → All agents → … → Add agent → upload the `.zip`.
+- **Tenant:** M365 admin center → Manage apps → Upload custom app → … → Add agent → upload the `.zip`.
 - **Public:** submit via Partner Center to the Microsoft 365 App Store.
 
 Generate a GUID for `id`:

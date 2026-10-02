@@ -29,10 +29,15 @@ in agreement.
 ## Copilot Cowork
 - Use plugins with Cowork: https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-plugins
 - Customize Cowork (plugins & skills): https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-customize
-- Build plugins for Cowork (package schema, manifest v1.29, validation, conversion script): https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-plugin-development
-- Register MCP servers as agent connectors (remoteMcpServer, mcpToolDescription, tool discovery): https://learn.microsoft.com/en-us/microsoftteams/platform/m365-apps/agent-connectors
+- Build plugins for Cowork (package schema, `atk import openplugin` / `atk package`, auth types, MCP annotations, file inputs, Cowork client identity, validation): https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-plugin-development
+- Register MCP servers as agent connectors (remoteMcpServer, auth types incl. DynamicClientRegistration + AzureKeyVault, tool discovery): https://learn.microsoft.com/en-us/microsoftteams/platform/m365-apps/agent-connectors
 - Unified manifest schema — remoteMcpServer object: https://learn.microsoft.com/en-us/microsoft-365/extensibility/schema/root-agent-connectors-tool-source-remote-mcp-server
 - Elicitation forms (MCP structured input mid-tool-call): https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-elicitation-forms
+
+## Microsoft 365 Copilot — federated connectors (admin-created, not packaged)
+- Federated connectors overview: https://learn.microsoft.com/en-us/microsoft-365/copilot/connectors/federated-connectors-overview
+- Set up custom federated connectors (admin center; read-only tools; OAuth needs client ID + secret): https://learn.microsoft.com/en-us/microsoft-365/copilot/connectors/set-up-custom-federated-connectors
+- Submit a federated connector to the Connectors Gallery (ISVs, Partner Center): https://learn.microsoft.com/en-us/microsoft-365/copilot/connectors/submit-federated-connector
 
 ## Copilot Studio
 - Copilot Studio docs: https://learn.microsoft.com/en-us/microsoft-copilot-studio/

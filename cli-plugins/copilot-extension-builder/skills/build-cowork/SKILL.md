@@ -35,6 +35,15 @@ Templates are in `templates/`. Authoritative spec:
 > A Cowork connector **is a remote MCP server**. If your "connector" is really an OpenAPI/REST API with rich
 > auth needs, build it as an M365 plugin and route accordingly.
 
+> **Package `agentConnectors` vs. custom federated connectors.** Both put an MCP server in front of Copilot,
+> but they're different products. A **custom federated connector** is created by an admin in the M365 admin
+> center (Copilot → Connectors → Gallery → Create a new connector). It expects **read-only** tools and, for
+> OAuth, a Developer Portal registration with a **client ID + client secret** (PKCE is optional on top). An
+> **`agentConnectors[]` entry** ships inside this app package, allows write tools (gated by annotations), and
+> its `OAuthPluginVault` registration can be a **public client (no secret) + PKCE** registered with
+> `atk`'s `oauth/register` action. If the MCP server's OAuth only issues a public client, or exposes write
+> tools, use the package path.
+
 ---
 
 ## What a plugin package contains
@@ -43,9 +52,10 @@ A Cowork plugin is a `.zip` with everything at the root:
 
 ```text
 my-plugin.zip
-├── manifest.json          # M365 Unified App Manifest v1.29
+├── manifest.json          # M365 Unified App Manifest v1.29 (v1.30 also valid)
 ├── color.png              # 192×192 full-color icon
 ├── outline.png            # 32×32 outline icon
+├── tools/                 # only if a connector uses mcpToolDescription.file
 └── skills/                # one folder per skill
     ├── skill-one/
     │   ├── SKILL.md        # required; frontmatter `name` MUST equal the folder name
@@ -55,7 +65,7 @@ my-plugin.zip
 ```
 
 Packaging patterns: **skills-only** (omit `agentConnectors`), **skills + connector**, or **connector-only**
-(omit `agentSkills`).
+(omit `agentSkills`). Limits: ≤20 skills and ≤10 connectors per package.
 
 ---
 
@@ -81,18 +91,36 @@ Connectors are **remote MCP servers** declared in the manifest's `agentConnector
 - Transport: **streamable HTTP over HTTPS** (TLS 1.2+), JSON-RPC 2.0; support `tools/list` and `tools/call`.
 - Each entry needs a unique `id`, a `displayName`, and a `toolSource.remoteMcpServer.mcpServerUrl` (valid
   HTTPS).
-- Auth (`toolSource.remoteMcpServer.authorization.type`):
-  - `None` — public/anonymous (omit `referenceId`).
-  - `OAuthPluginVault` / `ApiKeyPluginVault` — set `referenceId` to the credential registration ID in the
-    Microsoft Enterprise Token Store. **Secrets never go in the manifest or skill files.**
-  - Servers with **Dynamic Client Registration** can omit `authorization`; Cowork creates the OAuth client.
+- Auth (`toolSource.remoteMcpServer.authorization.type`). `referenceId` is required for every type except
+  `None`, and must be absent for `None`. **Secrets never go in the manifest or skill files.**
+  - `None` — public/anonymous.
+  - `OAuthPluginVault` — recommended for production. `referenceId` = the OAuth client registration ID
+    (Developer Portal, or `atk`'s `oauth/register` action in `m365agents.yml`, which writes it to an env var).
+    Public clients (no secret) are fine with `isPKCEEnabled: true`. Set usage to **Any Microsoft 365
+    Organization** if the plugin must work across tenants. Add
+    `https://teams.microsoft.com/api/platform/v1.0/oAuthRedirect` to the provider's allowed redirect URIs.
+  - `ApiKeyPluginVault` — **not supported in Cowork yet**; use OAuth/DCR or `None` for Cowork.
+  - `DynamicClientRegistration` — explicit type + `referenceId` to a Developer Portal DCR config; the server
+    must expose an RFC 7591 registration endpoint that returns a `client_id` **and** `client_secret`.
+    Alternatively, **omit `authorization` entirely** and Cowork creates the OAuth client itself — but that
+    shortcut is **Cowork-only** (not Copilot Chat). Don't use DCR for anonymous servers (see lessons.md).
+  - `AzureKeyVault` — **v1.29+**; `referenceId` maps to a secret in your own Key Vault.
 - **Tool discovery** (inside `remoteMcpServer`):
-  - **Dynamic** (recommended when the server exposes `tools/list`, e.g. Microsoft Learn) — *omit*
-    `mcpToolDescription`; agents fetch the tool list at runtime. **Requires manifest v1.29+.** On v1.28 the
-    package service rejects a `remoteMcpServer` with no `mcpToolDescription` (`Required properties are missing
-    from object: mcpToolDescription`).
-  - **Static** — set `mcpToolDescription.file` to a bundled JSON of tool definitions (matching `tools/list`
-    output). Valid on v1.28; use only when the toolset is stable.
+  - **Dynamic** (recommended) — *omit* `mcpToolDescription`; agents call `tools/list` at runtime and pick
+    up tool changes without republishing. **Requires manifest v1.29+.** The v1.28 schema still lists
+    `mcpToolDescription` as required (`Required properties are missing from object: mcpToolDescription`),
+    even though the Learn sample uses v1.28.
+  - **Static** — set `mcpToolDescription.file` to a bundled JSON (matching `tools/list` output); the file
+    must exist in the zip. Cowork itself ignores this file and always discovers dynamically.
+- **Annotate every tool** (`annotations` in `tools/list`): `readOnlyHint: true` auto-runs;
+  `readOnlyHint: false` or `destructiveHint: true` prompts for confirmation; `title` labels the prompt.
+  Unannotated tools are treated as destructive.
+- **File inputs:** declare a parameter with `contentEncoding: base64` and Cowork sends the workspace file's
+  bytes (≤8 files, ≤150 MiB per call, one array file param per tool, inline — no `$ref`, ≤4 levels deep).
+- **Recognizing Cowork traffic:** match the `copilot-cowork` prefix (case-insensitive) on the `User-Agent`
+  header (every request) or `clientInfo.name` (`initialize` only). It carries no user/tenant identity.
+- **Local testing:** expose a local server with a dev tunnel (`devtunnel port create <t> -p <port>
+  --protocol http` — `http` describes the *local* service; `https` causes 502s).
 - For structured mid-tool-call input, your MCP server can use **elicitation** (flat object, primitive fields,
   no secrets) — see `../../references/links.md` → Cowork elicitation forms.
 
@@ -100,7 +128,8 @@ Connectors are **remote MCP servers** declared in the manifest's `agentConnector
 
 ## Step 3 — Write the manifest
 
-Start from `templates/plugin-package/manifest.json` (Unified App Manifest **v1.29**) and set:
+Start from `templates/plugin-package/manifest.json` (Unified App Manifest **v1.29**; v1.30 is also valid and
+only adds Outlook add-in fields) and set:
 
 - `id` — a stable GUID (keep it constant across updates). Generate with `[guid]::NewGuid().ToString()`.
 - `developer` (name + website/privacy/terms URLs), `name` (short/full), `description` (short/full), `icons`,
@@ -125,8 +154,17 @@ Placeholders are fine for personal testing; replace before store submission.
 Compress-Archive -Path manifest.json, color.png, outline.png, skills -DestinationPath ..\my-plugin.zip -Force
 ```
 
-Default output: a **sibling folder in the current workspace**, with the `.zip` written one level up so it
-doesn't include itself.
+Add `tools` to `-Path` only if a connector uses `mcpToolDescription.file`. Default output: a **sibling folder
+in the current workspace**, with the `.zip` written one level up so it doesn't include itself.
+
+In an Agents Toolkit project (`appPackage/manifest.json` with `${{ENV_VAR}}` placeholders such as an OAuth
+`referenceId`), let `atk` resolve the placeholders and zip instead:
+
+```bash
+atk package --manifest-file ./appPackage/manifest.json \
+  --output-package-file ./appPackage/build/appPackage.zip \
+  --output-folder ./appPackage/build
+```
 
 ---
 
@@ -140,8 +178,8 @@ doesn't include itself.
   atk auth login
   atk install --file-path "./my-plugin.zip" --scope Personal
   ```
-- **Tenant publish:** M365 admin center → **Agents → All agents → … → Add agent** → upload the `.zip`; it then
-  appears in **Cowork → Sources & Skills → Plugins → Discover**.
+- **Tenant publish:** M365 admin center → **Manage apps → Upload custom app → … → Add agent** → upload the
+  `.zip`; it then appears in **Cowork → Sources & Skills → Plugins → Discover**.
 - **Public:** submit via Partner Center to the Microsoft 365 App Store.
 
 Always **test in a new conversation** and select the plugin in the **Sources & Skills** panel before relying
@@ -151,15 +189,32 @@ on it.
 
 ## Convert an existing Claude plugin
 
-If you already have a Claude Code plugin (`.claude-plugin/plugin.json`, `.mcp.json`, `skills/`), Microsoft's
-[conversion script](https://aka.ms/copilot-cowork-plugin-conversion-script) emits a valid M365 `.zip`:
+If you already have a Claude Code or Cursor plugin (`.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`,
+or `.plugin/plugin.json`, plus `.mcp.json` and `skills/`), the Agents Toolkit CLI (**v1.1.12+**) imports it
+into an `atk` project:
 
-```powershell
-.\Convert-ClaudePluginToMOS3.ps1 -PluginPath ./my-claude-plugin -OutputPath ./output
+```bash
+npm install -g @microsoft/m365agentstoolkit-cli
+atk import openplugin --path ./my-claude-plugin --output ./my-plugin-project \
+  --privacy-url https://contoso.com/privacy --terms-url https://contoso.com/terms
 ```
 
-`skills/*/SKILL.md` copy over verbatim (same open standard); `.mcp.json` servers become `agentConnectors[]`.
-Not yet converted: `commands/`, `agents/`, `hooks/`.
+- `skills/*/SKILL.md` copy over verbatim; `.mcp.json` servers become `agentConnectors[]` (HTTPS URLs default to
+  `OAuthPluginVault`, localhost/HTTP to `None`; override with `--default-auth-type`).
+- The generated `authorization.referenceId` is a **placeholder** — replace it with your real OAuth
+  registration ID before publishing.
+- The generated manifest is **`devPreview`**; set `$schema`/`manifestVersion` to a GA version (v1.29+ for
+  dynamic discovery) if your publishing channel requires it.
+- The `id` is a deterministic UUID v5 from the plugin name (override with `--app-id`). Placeholder icons are
+  generated if missing.
+- Agent Plugins 1.0 layout (top-level `plugin.json` + `mcp.json`): move to `.plugin/plugin.json` and rename to
+  `.mcp.json` first.
+- Not yet converted: `commands/`, `agents/`, `hooks/`.
+- Round-trip back to a plugin directory with `atk export openplugin`. Then package with `atk package` (Step 5).
+
+Legacy alternative: Microsoft's
+[PowerShell conversion script](https://aka.ms/copilot-cowork-plugin-conversion-script)
+(`.\Convert-ClaudePluginToMOS3.ps1 -PluginPath ./my-claude-plugin -OutputPath ./output`).
 
 ---
 
@@ -170,7 +225,10 @@ Not yet converted: `commands/`, `agents/`, `hooks/`.
 - [ ] `SKILL.md` has valid YAML frontmatter with `name` + `description`.
 - [ ] `name` is kebab-case and equals the folder's last path segment.
 - [ ] Each connector has a unique `id` + `displayName`; exactly one `remoteMcpServer`; HTTPS `mcpServerUrl`.
-- [ ] `authorization.referenceId` is present for OAuth/ApiKey, absent for `None`.
+- [ ] `authorization.referenceId` is present for every type except `None`, and absent for `None`.
+- [ ] If `mcpToolDescription` is present, its `file` exists in the zip; if absent, manifest is v1.29+.
+- [ ] Every MCP tool returns `annotations` (`readOnlyHint` / `destructiveHint` / `title`).
+- [ ] No fields outside the target schema version (`additionalProperties: false` rejects e.g. `packageName`).
 - [ ] Companion files: ≤20 per skill, ≤5 MB each, relative paths, no `..`, no hidden/reserved names.
 
 ---
