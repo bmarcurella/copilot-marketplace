@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.0
+
+- Moved the manifest from `.github/plugin/plugin.json` to the plugin root (`plugin.json`), as the
+  Agent Plugins 1.0 spec requires. Skills are unchanged and still load from `skills/`.
+
 ## 0.1.0
 
 - Initial marketplace package.

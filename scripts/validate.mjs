@@ -3,11 +3,19 @@
  * Repo validation for copilot-marketplace. No dependencies — run with `node scripts/validate.mjs`.
  *
  * Checks:
- *  - .github/plugin/marketplace.json parses; every entry's source folder + plugin.json exist,
- *    and name/version match the plugin's own plugin.json
+ *  - .github/plugin/marketplace.json parses; every entry's source folder has a plugin manifest,
+ *    and name/version match it
  *  - every cli-plugins/* plugin is registered in marketplace.json
- *  - every plugin.json skills[] and Cowork manifest agentSkills[] folder exists and contains a
- *    SKILL.md with `name` (matching the folder) and `description` frontmatter
+ *  - CLI plugin manifests in either format:
+ *      Agent Plugins 1.0/1.1 — root plugin.json with a recognized $schema, closed field set, spec
+ *        name rules, skills from skills/*, optional root mcp.json on the same spec version, and
+ *        Copilot-only components under com.github.copilot/
+ *      legacy — .plugin/, root, .github/plugin/, or .claude-plugin/ plugin.json (CLI search order);
+ *        skills/agents/hooks/mcpServers from manifest paths or the default locations
+ *  - every skill (CLI plugin, Cowork agentSkills[], library/skills) has a SKILL.md with `name`
+ *    (matching the folder) and `description` frontmatter
+ *  - every agent (*.agent.md in plugins and library/agents) has frontmatter with a `description`
+ *  - library/instructions and library/prompts files use the .instructions.md / .prompt.md suffixes
  *  - Cowork manifests parse, use the Unified App Manifest schema, and their icon files exist
  *  - Cowork skill descriptions fit the 1024-char limit and names are kebab-case (ASKILL-P007)
  *  - companion files obey the Cowork limits (<=20 per skill, <=5 MB each, <=10 MB total, no hidden
@@ -24,7 +32,9 @@ import process from "node:process";
 
 const root = path.resolve(import.meta.dirname, "..");
 const errors = [];
-const fail = (msg) => errors.push(msg);
+const fail = (msg) => {
+  if (!errors.includes(msg)) errors.push(msg);
+};
 
 const rel = (p) => path.relative(root, p);
 
@@ -138,7 +148,131 @@ function checkSkill(skillDir, owner) {
   checkCompanionFiles(skillDir);
 }
 
+function checkAgent(file) {
+  const text = readFileSync(file, "utf8");
+  const fm = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!fm) {
+    fail(`${rel(file)}: missing YAML frontmatter (--- block)`);
+    return;
+  }
+  if (!readDescription(fm[1])) fail(`${rel(file)}: frontmatter missing "description"`);
+}
+
+function listFiles(dir) {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((d) => d.isFile())
+    .map((d) => path.join(dir, d.name));
+}
+
+const asArray = (v) => (v === undefined ? [] : Array.isArray(v) ? v : [v]);
+
+// A skills path may point at one skill folder (has SKILL.md) or a parent folder of skill folders.
+function checkSkillsPath(dir, owner) {
+  if (!existsSync(dir)) {
+    fail(`${owner}: skills path ${rel(dir)} does not exist`);
+    return;
+  }
+  if (existsSync(path.join(dir, "SKILL.md"))) checkSkill(dir, owner);
+  else for (const skillDir of listDirs(dir)) checkSkill(skillDir, owner);
+}
+
+function checkAgentsPath(dir, owner) {
+  if (!existsSync(dir)) {
+    fail(`${owner}: agents path ${rel(dir)} does not exist`);
+    return;
+  }
+  for (const file of listFiles(dir).filter((f) => f.endsWith(".agent.md"))) checkAgent(file);
+}
+
+function checkJsonFile(file, owner) {
+  if (!existsSync(file)) fail(`${owner}: ${rel(file)} does not exist`);
+  else readJson(file);
+}
+
 // --- CLI plugins + marketplace catalog ---------------------------------------------------------
+
+const AGENT_PLUGINS_SCHEMA = /^https:\/\/agent-plugins\.org\/schemas\/(1\.0\.0|1\.1\.0)\/plugin\.schema\.json$/;
+const AGENT_PLUGINS_FIELDS = new Set([
+  "$schema", "name", "version", "description", "author", "homepage", "repository", "license", "keywords", "extensions",
+]);
+// Legacy manifest locations, in the order the Copilot CLI searches them.
+const LEGACY_MANIFESTS = [".plugin/plugin.json", "plugin.json", ".github/plugin/plugin.json", ".claude-plugin/plugin.json"];
+
+// Returns { file, plugin, spec } for the manifest the CLI would load, or null.
+function loadPluginManifest(pluginDir) {
+  const isSpec = (p) => typeof p?.$schema === "string" && p.$schema.includes("agent-plugins.org");
+  // A root manifest that targets Agent Plugins wins over every legacy location (spec §5.1).
+  const rootFile = path.join(pluginDir, "plugin.json");
+  if (existsSync(rootFile)) {
+    const plugin = readJson(rootFile);
+    if (!plugin) return null;
+    if (isSpec(plugin)) return { file: rootFile, plugin, spec: true };
+  }
+  for (const candidate of LEGACY_MANIFESTS) {
+    const file = path.join(pluginDir, candidate);
+    if (!existsSync(file)) continue;
+    const plugin = readJson(file);
+    if (!plugin) return null;
+    if (isSpec(plugin)) {
+      fail(`${rel(file)}: Agent Plugins manifests must be at the plugin root (plugin.json), not ${candidate}`);
+    }
+    return { file, plugin, spec: false };
+  }
+  return null;
+}
+
+function checkAgentPlugin(pluginDir, file, plugin) {
+  const owner = rel(file);
+  if (!AGENT_PLUGINS_SCHEMA.test(plugin.$schema)) {
+    fail(`${owner}: unsupported Agent Plugins $schema "${plugin.$schema}" (CLI accepts 1.0.0 and 1.1.0)`);
+  }
+  const name = plugin.name ?? "";
+  if (!/^[a-z0-9](?:[a-z0-9.-]{0,62}[a-z0-9])?$/.test(name) || name.includes("--") || name.includes("..")) {
+    fail(`${owner}: name "${name}" breaks Agent Plugins rules (1-64 chars, a-z 0-9 . -, alphanumeric ends, no -- or ..)`);
+  }
+  for (const key of Object.keys(plugin)) {
+    if (!AGENT_PLUGINS_FIELDS.has(key)) {
+      fail(`${owner}: "${key}" is not an Agent Plugins field and would be ignored — components use fixed folders (skills/, mcp.json, com.github.copilot/)`);
+    }
+  }
+  const skillsDir = path.join(pluginDir, "skills");
+  if (existsSync(skillsDir)) checkSkillsPath(skillsDir, owner);
+
+  const mcpFile = path.join(pluginDir, "mcp.json");
+  if (existsSync(mcpFile)) {
+    const mcp = readJson(mcpFile);
+    const pluginVersion = plugin.$schema?.match(/schemas\/([\d.]+)\//)?.[1];
+    const mcpVersion = mcp?.$schema?.match(/agent-plugins\.org\/schemas\/([\d.]+)\//)?.[1];
+    if (mcp && mcpVersion !== pluginVersion) {
+      fail(`${rel(mcpFile)}: $schema must be an Agent Plugins ${pluginVersion} URL to match plugin.json`);
+    }
+  }
+  if (existsSync(path.join(pluginDir, ".mcp.json"))) {
+    fail(`${owner}: Agent Plugins load MCP servers from mcp.json — .mcp.json is ignored`);
+  }
+
+  const copilotDir = path.join(pluginDir, "com.github.copilot");
+  if (existsSync(path.join(copilotDir, "agents"))) checkAgentsPath(path.join(copilotDir, "agents"), owner);
+  if (existsSync(path.join(copilotDir, "hooks/hooks.json"))) readJson(path.join(copilotDir, "hooks/hooks.json"));
+  if (existsSync(path.join(copilotDir, "lsp.json"))) readJson(path.join(copilotDir, "lsp.json"));
+}
+
+function checkLegacyPlugin(pluginDir, file, plugin) {
+  const owner = rel(file);
+  const resolve = (p) => path.join(pluginDir, p);
+
+  const skills = asArray(plugin.skills);
+  if (skills.length) for (const p of skills) checkSkillsPath(resolve(p), owner);
+  else if (existsSync(resolve("skills"))) checkSkillsPath(resolve("skills"), owner);
+
+  const agents = asArray(plugin.agents);
+  if (agents.length) for (const p of agents) checkAgentsPath(resolve(p), owner);
+  else if (existsSync(resolve("agents"))) checkAgentsPath(resolve("agents"), owner);
+
+  if (typeof plugin.hooks === "string") checkJsonFile(resolve(plugin.hooks), owner);
+  if (typeof plugin.mcpServers === "string") checkJsonFile(resolve(plugin.mcpServers), owner);
+}
 
 const marketplaceFile = path.join(root, ".github/plugin/marketplace.json");
 const marketplace = existsSync(marketplaceFile)
@@ -147,38 +281,31 @@ const marketplace = existsSync(marketplaceFile)
 const registered = new Map((marketplace?.plugins ?? []).map((p) => [p.name, p]));
 
 for (const [name, entry] of registered) {
-  const pluginDir = path.join(root, entry.source ?? "");
-  const pluginFile = path.join(pluginDir, ".github/plugin/plugin.json");
-  if (!entry.source || !existsSync(pluginFile)) {
-    fail(`marketplace.json: plugin "${name}" source "${entry.source}" has no .github/plugin/plugin.json`);
+  const loaded = entry.source ? loadPluginManifest(path.join(root, entry.source)) : null;
+  if (!loaded) {
+    fail(`marketplace.json: plugin "${name}" source "${entry.source}" has no plugin manifest`);
     continue;
   }
-  const plugin = readJson(pluginFile);
-  if (!plugin) continue;
-  if (plugin.name !== name) fail(`marketplace.json: entry "${name}" but ${rel(pluginFile)} says "${plugin.name}"`);
+  const { file, plugin } = loaded;
+  if (plugin.name !== name) fail(`marketplace.json: entry "${name}" but ${rel(file)} says "${plugin.name}"`);
   if (plugin.version !== entry.version) {
-    fail(`marketplace.json: "${name}" version ${entry.version} != plugin.json version ${plugin.version}`);
+    fail(`marketplace.json: "${name}" version ${entry.version} != ${rel(file)} version ${plugin.version}`);
   }
 }
 
 for (const pluginDir of listDirs(path.join(root, "cli-plugins"))) {
-  const pluginFile = path.join(pluginDir, ".github/plugin/plugin.json");
-  if (!existsSync(pluginFile)) {
-    fail(`${rel(pluginDir)}: missing .github/plugin/plugin.json`);
+  const loaded = loadPluginManifest(pluginDir);
+  if (!loaded) {
+    fail(`${rel(pluginDir)}: missing plugin manifest (plugin.json or .github/plugin/plugin.json)`);
     continue;
   }
-  const plugin = readJson(pluginFile);
-  if (!plugin) continue;
-  checkPlaceholders(pluginFile);
+  const { file, plugin, spec } = loaded;
+  checkPlaceholders(file);
   if (!registered.has(plugin.name)) {
     fail(`${rel(pluginDir)}: "${plugin.name}" is not registered in .github/plugin/marketplace.json`);
   }
-  for (const skillRef of plugin.skills ?? []) {
-    checkSkill(path.join(pluginDir, skillRef), rel(pluginFile));
-  }
-  if (plugin.hooks && !existsSync(path.join(pluginDir, plugin.hooks))) {
-    fail(`${rel(pluginFile)}: hooks file "${plugin.hooks}" does not exist`);
-  }
+  if (spec) checkAgentPlugin(pluginDir, file, plugin);
+  else checkLegacyPlugin(pluginDir, file, plugin);
 }
 
 // --- Cowork plugins ----------------------------------------------------------------------------
@@ -198,6 +325,20 @@ for (const pluginDir of listDirs(path.join(root, "cowork-plugins"))) {
   }
   for (const { folder } of manifest.agentSkills ?? []) {
     checkSkill(path.join(pluginDir, folder), rel(manifestFile));
+  }
+}
+
+// --- Library (inert building blocks) -----------------------------------------------------------
+
+const library = path.join(root, "library");
+for (const skillDir of listDirs(path.join(library, "skills"))) checkSkill(skillDir, "library/skills");
+const LIBRARY_SUFFIX = { agents: ".agent.md", instructions: ".instructions.md", prompts: ".prompt.md" };
+for (const [folder, suffix] of Object.entries(LIBRARY_SUFFIX)) {
+  for (const file of listFiles(path.join(library, folder))) {
+    const base = path.basename(file);
+    if (base === ".gitkeep" || base === "README.md") continue;
+    if (!base.endsWith(suffix)) fail(`${rel(file)}: files in library/${folder}/ must end with ${suffix}`);
+    else if (folder === "agents") checkAgent(file);
   }
 }
 

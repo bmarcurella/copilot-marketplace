@@ -73,9 +73,15 @@ The five specialists remain independently triggerable for one-off asks ("just pl
 From the repo root — this zips with `manifest.json` at the **root** (required; zipping the folder itself
 produces a package Cowork rejects):
 
-```bash
-./scripts/build-cowork.sh customer-architect     # → dist/customer-architect-<version>.zip
+```powershell
+./scripts/build-cowork.ps1 customer-architect    # Windows → dist/customer-architect-<version>.zip
 ```
+
+```bash
+./scripts/build-cowork.sh customer-architect     # macOS / Linux / CI → dist/customer-architect-<version>.zip
+```
+
+Check the manifest against the M365 schema with `node scripts/validate-cowork-schema.mjs` (needs `atk`).
 
 Releases are built by CI: push a tag `cowork/customer-architect-v<version>` matching `manifest.json`.
 
@@ -90,8 +96,8 @@ Releases are built by CI: push a tag `cowork/customer-architect-v<version>` matc
    ```
 
 2. **Direct upload in Cowork:** **Customize → Plugins → Upload plugin**, then select the `.zip`.
-3. **Tenant publish:** M365 admin center → **Agents → All agents → … → Add agent**, upload the `.zip`; it
-   then appears in **Cowork → Sources & Skills → Plugins → Discover**.
+3. **Tenant publish:** M365 admin center → **Manage apps → Upload custom app → … → Add agent**, upload the
+   `.zip`; it then appears in **Cowork → Sources & Skills → Plugins → Discover**.
 
 Test in a **new** conversation (skill edits don't apply to active threads), and enable the plugin plus the
 **Microsoft Learn MCP** connector in **Sources & Skills** first.

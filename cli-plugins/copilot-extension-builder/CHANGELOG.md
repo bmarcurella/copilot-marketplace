@@ -13,6 +13,25 @@ Format:
 - [source-id] what changed -> what was edited. (source: URL) [auto|review]
 ```
 
+## 2026-10-02 (b)
+- [cli-plugin-reference] **Agent Plugins 1.0 is a separate, closed manifest format, not an add-on.** The
+  previous `build-cli-plugin` note ("`$schema` is additive on top of normal loading") was wrong. A spec
+  manifest must be a root `plugin.json`, allows only metadata fields (`skills`/`agents`/`hooks`/`mcpServers`
+  are ignored), loads skills only from `skills/` and MCP only from a root `mcp.json` with the matching spec
+  `$schema`, and puts Copilot-only agents/hooks under `com.github.copilot/`. The CLI accepts spec 1.0.0 and
+  1.1.0 and rejects unsupported versions → `build-cli-plugin` now defaults to Agent Plugins for every
+  plugin (agents/hooks/commands go under `com.github.copilot/`; legacy only for custom component paths or
+  clients without spec support), documents both layouts, adds `templates/agent-plugin.json`, and uses
+  `copilot --plugin-dir` as the no-install test loop. This plugin itself moved to the spec layout
+  (`plugin.json` at the root, hook at `com.github.copilot/hooks/hooks.json`).
+  (source: https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-plugin-reference) [review → applied]
+- [cowork-plugin-development] Verified by running `atk` 1.1.18 on 2026-10-02:
+  `atk import openplugin` reads a root Agent Plugins `plugin.json` directly (the doc's `.plugin/` move isn't
+  needed). Imported manifests copy the plugin `version`, and M365 validation rejects versions starting with
+  `0`. `atk validate --manifest-file` works without sign-in, and `atk package` requires `m365agents.yml`.
+  Windows PowerShell 5.1 `Compress-Archive` writes backslash entry names → updated `build-cowork/SKILL.md`
+  (convert section, Step 5, checklist) and `templates/plugin-package/README.md`. (source: https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-plugin-development) [auto]
+
 ## 2026-10-02
 - [cowork-plugin-development] **Resolves the 2026-08-14 review item.** Doc now leads with the Agents
   Toolkit CLI: `atk import openplugin` (CLI ≥1.1.12; Claude/Cursor/`.plugin` → `atk` project, devPreview

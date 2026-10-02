@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "microsoft-frontend",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Design, build, and review polished React and TypeScript frontends with Fluent UI React v9, accessible UX patterns, and reusable dashboard and agent experience guidance.",
   "author": {
     "name": "Brandon Marcurella"

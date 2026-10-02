@@ -26,11 +26,49 @@ Templates are in `templates/` (sibling to this file). Copy them and replace `{{P
 - **distribute?** — also generate `marketplace.json`.
 - **output location** — default: a sibling folder in the current workspace named after the plugin.
 
+Then pick the **manifest format**. Default to **Agent Plugins 1.0** for every plugin: it's the cross-tool
+spec, VS Code and the Copilot CLI both load its Copilot-only parts from `com.github.copilot/` (agents,
+hooks, slash commands, automation templates), and `atk import openplugin` can convert it to a Cowork
+package. Use **legacy** only when the user needs manifest-configured component paths (several skill
+roots, an `extensions` directory list, inline hooks or MCP config) or targets a client without Agent
+Plugins support.
+
+| Components | Agent Plugins 1.0 location |
+| --- | --- |
+| Skills | `skills/<name>/SKILL.md` (portable) |
+| MCP servers | root `mcp.json` with the matching spec `$schema` (portable) |
+| Agents | `com.github.copilot/agents/<name>.agent.md` |
+| Hooks | `com.github.copilot/hooks/hooks.json` — use `${PLUGIN_ROOT}` for script paths |
+| Slash commands / LSP | `com.github.copilot/commands/`, `com.github.copilot/lsp.json` |
+| Automation templates (VS Code) | `com.github.copilot/automations/<name>.automation.md` |
+
+Verified 2026-10-02 with the Copilot CLI (`--plugin-dir`, isolated `COPILOT_HOME`): skills, agents
+(`<plugin>:<agent>` IDs), and a `SessionStart` hook all loaded from these locations, and `${PLUGIN_ROOT}`
+expanded to the plugin root in the hook command.
+
 ---
 
 ## Step 2 — Create the structure
 
-Create only the folders for the components you chose:
+Create only the folders for the components you chose.
+
+**Agent Plugins 1.0** (start from `templates/agent-plugin.json`, saved as `plugin.json`):
+
+```text
+{{plugin-name}}/
+├── plugin.json              # manifest at the plugin ROOT (required)
+├── skills/                  # fixed location — the only place skills load from
+│   └── {{skill-name}}/
+│       └── SKILL.md
+├── mcp.json                 # optional; fixed location, needs the matching spec $schema
+├── com.github.copilot/      # optional Copilot-only components
+│   ├── agents/{{agent-name}}.agent.md
+│   ├── hooks/hooks.json     # commands can reference ${PLUGIN_ROOT}/scripts/...
+│   └── commands/
+└── README.md
+```
+
+**Legacy** (only when Step 1 calls for it; start from `templates/plugin.json`):
 
 ```text
 {{plugin-name}}/
@@ -49,8 +87,11 @@ Create only the folders for the components you chose:
 ```
 
 Notes:
-- The manifest is searched in this order: `.plugin/plugin.json`, `plugin.json`, `.github/plugin/plugin.json`, `.claude-plugin/plugin.json`. This template uses `.github/plugin/plugin.json`.
-- **Component paths in `plugin.json` are relative to the plugin ROOT** (the top folder), not to the manifest's location.
+- A root `plugin.json` with an Agent Plugins `$schema` wins over every other location. Legacy manifests are
+  searched in this order: `.plugin/plugin.json`, `plugin.json`, `.github/plugin/plugin.json`,
+  `.claude-plugin/plugin.json`. The legacy template uses `.github/plugin/plugin.json`.
+- **Legacy component paths in `plugin.json` are relative to the plugin ROOT** (the top folder), not to the
+  manifest's location.
 - A **skill's `name` frontmatter field must match its folder name**, or it is silently ignored.
 - For deep authoring of any individual agent/skill/instruction/prompt/hook, hand the file off to `agent-customization`; this skill just lays down working stubs.
 
@@ -58,7 +99,15 @@ Notes:
 
 ## Step 3 — Fill in the manifest
 
-Start from `templates/plugin.json`. Required: `name`. Add only what you use:
+**Agent Plugins 1.0** — closed schema. Required: `$schema`
+(`https://agent-plugins.org/schemas/1.0.0/plugin.schema.json`; the CLI also accepts 1.1.0) and `name`
+(1–64 chars, lowercase letters/digits/`-`/`.`, alphanumeric at both ends, no `--` or `..`). Optional:
+`version`, `description`, `author`, `homepage`, `repository`, `license`, `keywords`, `extensions`.
+**Don't add `skills`, `agents`, `hooks`, `mcpServers`, or `lspServers`**; they're ignored, and the
+fixed folders above are used instead. A root `mcp.json` must declare the same spec version in its own
+`$schema`. Unsupported spec versions make the CLI reject the whole plugin.
+
+**Legacy** — required: `name`. Add only what you use:
 
 | Field | When to add | Value |
 | --- | --- | --- |
@@ -66,18 +115,26 @@ Start from `templates/plugin.json`. Required: `name`. Add only what you use:
 | `agents` | bundling agents | `"./agents"` — or omit to use the default `agents/` |
 | `hooks` | bundling hooks | `"./hooks/hooks.json"` |
 | `mcpServers` | bundling MCP | `"./.mcp.json"` |
-| `$schema` | opting into the Agent Plugins (Open Plugin Spec) 1.0 cross-tool format | the canonical spec schema URL (see https://agent-plugins.org) — additive on top of normal loading; spec-mode plugins may use dots in names, and spec-only clients load just the portable parts (`skills/` + `mcp.json`) |
 | `keywords`, `repository`, `homepage`, `category`, `tags` | optional metadata | as needed |
 
 `agents/` and `skills/` are auto-discovered at the default paths, so you can omit those fields unless
-you use non-default locations.
+you use non-default locations. Don't put an Agent Plugins `$schema` in a legacy manifest; it only applies
+to a root `plugin.json`.
 
 ---
 
 ## Step 4 — Install and test (the iteration loop)
 
-The Copilot CLI now **deprecates direct path/repo installs** in favor of `plugin@marketplace` (Step 5).
-For quick local iteration the direct install still works:
+Fastest loop — load the folder for one session, nothing installed or cached:
+
+```powershell
+copilot --plugin-dir ./{{plugin-name}}                    # interactive session with the plugin loaded
+copilot --plugin-dir ./{{plugin-name}} plugin list        # listed under "External Plugins"
+copilot --plugin-dir ./{{plugin-name}} skill list         # confirm its skills loaded
+```
+
+The Copilot CLI **deprecates direct path/repo installs** in favor of `plugin@marketplace` (Step 5), but
+they still work if you need to test the installed path:
 
 ```powershell
 copilot plugin install ./{{plugin-name}}   # deprecated, but fine for local dev
@@ -132,13 +189,17 @@ own plugins to anyone opening it via `.github/copilot/settings.json` with `extra
 
 | File | Purpose |
 | --- | --- |
-| `templates/plugin.json` | Manifest starter |
+| `templates/agent-plugin.json` | Agent Plugins 1.0 manifest starter (save as root `plugin.json`) |
+| `templates/plugin.json` | Legacy manifest starter (save as `.github/plugin/plugin.json`) |
 | `templates/marketplace.json` | Distribution catalog |
 | `templates/agent.agent.md` | Custom agent stub (accurate frontmatter) |
 | `templates/skill/SKILL.md` | Skill stub |
 | `templates/hooks.json` | Lifecycle hooks starter |
-| `templates/mcp.json` | MCP server config (save as `.mcp.json`) |
+| `templates/mcp.json` | MCP server config (save as `.mcp.json` for legacy; Agent Plugins need `mcp.json` with the spec `$schema`) |
 | `templates/README.md` | Plugin README starter |
+
+To ship a skills-only Agent Plugin to Cowork as well, hand off to `build-cowork` (it covers
+`atk import openplugin`).
 
 ## Safety
 

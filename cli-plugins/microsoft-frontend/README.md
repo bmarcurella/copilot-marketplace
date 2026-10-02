@@ -28,6 +28,19 @@ copilot plugin marketplace add bmarcurella/copilot-marketplace
 copilot plugin install microsoft-frontend@copilot-marketplace
 ```
 
+## Format
+
+This plugin uses the [Agent Plugins 1.0](https://agent-plugins.org/) layout: `plugin.json` at the plugin
+root with the spec `$schema`, and skills in the fixed `skills/` folder (no component paths in the
+manifest). That keeps it portable across clients that support the spec, and `atk import openplugin` can
+turn it into a Cowork package (see the repo [CONTRIBUTING.md](../../CONTRIBUTING.md)).
+
+Try local edits without installing:
+
+```bash
+copilot --plugin-dir ./cli-plugins/microsoft-frontend
+```
+
 ## Validate in the marketplace repository
 
 From the repository root:

@@ -24,10 +24,14 @@ Scaffolding templates live in `cli-plugins/copilot-extension-builder/skills/*/te
 use them (or the installed `copilot-extension-builder` plugin) rather than writing manifests
 from scratch.
 
-- **CLI plugin** → `cli-plugins/<name>/` with `.github/plugin/plugin.json`, then **register it**
-  in `.github/plugin/marketplace.json` with `"source": "cli-plugins/<name>"` and a matching version.
+- **CLI plugin** → `cli-plugins/<name>/`, then **register it** in `.github/plugin/marketplace.json`
+  with `"source": "cli-plugins/<name>"` and a matching version. Use the **Agent Plugins 1.0** layout:
+  root `plugin.json` with the agent-plugins.org `$schema` and metadata fields only; skills in
+  `skills/`, MCP in root `mcp.json`, and Copilot-only agents/hooks/commands under `com.github.copilot/`
+  (`agents/*.agent.md`, `hooks/hooks.json`). No component path fields in the manifest.
 - **Cowork plugin** → `cowork-plugins/<name>/` with `manifest.json` (Unified App Manifest v1.29),
-  `color.png` (192×192), `outline.png` (32×32), and `skills/<skill>/SKILL.md`.
+  `color.png` (192×192), `outline.png` (32×32), and `skills/<skill>/SKILL.md`. To reuse a CLI
+  plugin's skills, generate it with `atk import openplugin` (see CONTRIBUTING.md) rather than by hand.
 - **Standalone skill/agent/prompt/instruction** → `library/<type>/` (see `library/README.md`).
 - Every `SKILL.md` needs frontmatter with `name` (matching its folder) and a `description` that
   states when to use it (USE-FOR trigger phrases).
@@ -46,16 +50,19 @@ For `customer-architect`, those reference files are **generated** from the `<!--
 ## Validation and releases
 
 - Run `node scripts/validate.mjs` and `node scripts/sync-cowork-references.mjs --check` before finishing any
-  change — CI runs both on PRs.
-- Build a Cowork package with `./scripts/build-cowork.sh <plugin>` (zips with `manifest.json` at the zip
+  change — CI runs both on PRs. If you touched `cowork-plugins/`, also run
+  `node scripts/validate-cowork-schema.mjs` (needs the `atk` CLI; CI installs it).
+- Build a Cowork package with `./scripts/build-cowork.ps1 <plugin>` on Windows or
+  `./scripts/build-cowork.sh <plugin>` elsewhere (both zip with `manifest.json` at the zip
   root, which Cowork requires).
 - **Never commit `.zip` files or secrets.** Built packages go to gitignored `dist/` locally and
   ship via GitHub Releases.
 - Cowork release flow: bump `version` in the plugin's `manifest.json`, then tag
   `cowork/<plugin>-v<version>` — the `release-cowork.yml` workflow builds the zip (manifest at
   zip root, no `__MACOSX`) and attaches it to a Release.
-- CLI plugin release flow: bump `version` in both the plugin's `plugin.json` **and** its
-  `.github/plugin/marketplace.json` entry (the validator enforces they match).
+- CLI plugin release flow: bump `version` in both the plugin's manifest **and** its
+  `.github/plugin/marketplace.json` entry (the validator enforces they match). Test a plugin without
+  installing it via `copilot --plugin-dir ./cli-plugins/<name>`.
 
 ## Using this repo's plugins while working in it
 

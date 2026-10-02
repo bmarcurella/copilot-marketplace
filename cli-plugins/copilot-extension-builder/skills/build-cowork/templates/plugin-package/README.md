@@ -30,6 +30,7 @@ MCP connectors. Format per
 4. Package:
 
    ```powershell
+   # PowerShell 7+ (Windows PowerShell 5.1's Compress-Archive writes backslash entry names)
    Compress-Archive -Path manifest.json, color.png, outline.png, skills -DestinationPath ..\{{plugin-name}}.zip -Force
    ```
 
