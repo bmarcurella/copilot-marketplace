@@ -18,3 +18,9 @@ jobs:
 
       - name: Check demo-architect references are in sync
         run: node scripts/sync-cowork-references.mjs --check
+
+      - name: Install Microsoft 365 Agents Toolkit CLI
+        run: npm install -g @microsoft/m365agentstoolkit-cli@1
+
+      - name: Validate Cowork manifests against the M365 schema
+        run: node scripts/validate-cowork-schema.mjs

@@ -20,9 +20,9 @@ reusable building blocks.
 copilot-marketplace/
 ├── .github/plugin/marketplace.json   # the Copilot CLI catalog (lists every cli-plugins/* entry)
 ├── cli-plugins/                      # installable via the marketplace
-│   └── copilot-extension-builder/
-│   └── microsoft-frontend/
-│   └── personal-toolkit/
+│   └── copilot-extension-builder/    #   legacy manifest: .github/plugin/plugin.json (uses hooks)
+│   └── microsoft-frontend/           #   Agent Plugins 1.0: root plugin.json + skills/
+│   └── personal-toolkit/             #   legacy manifest: .github/plugin/plugin.json (uses agents)
 ├── cowork-plugins/                   # M365 app packages → build .zip → GitHub Release
 │   └── customer-architect/
 ├── library/                          # reusable building blocks (inert here)
@@ -73,11 +73,15 @@ Releases are built by CI: bump `version` in the plugin's `manifest.json`, merge,
 git tag cowork/customer-architect-v1.0.1 && git push origin cowork/customer-architect-v1.0.1
 ```
 
-To build locally for testing (manifest.json must sit at the **zip root** — don't zip the folder itself):
+To build locally for testing (`manifest.json` must sit at the **zip root** — the scripts handle that and
+write `dist/<plugin>-<version>.zip`):
+
+```powershell
+./scripts/build-cowork.ps1 customer-architect    # Windows (PowerShell 5.1 or 7)
+```
 
 ```sh
-cd cowork-plugins/customer-architect
-zip -r ../../dist/customer-architect.zip . -x "README.md" -x "*.DS_Store"
+./scripts/build-cowork.sh customer-architect     # macOS / Linux / CI (needs zip)
 ```
 
 ### Available Cowork plugins
@@ -107,7 +111,28 @@ copilot plugin install copilot-extension-builder@copilot-marketplace
 ```
 
 When you add a new **CLI plugin**, also add an entry to `.github/plugin/marketplace.json` with
-`"source": "cli-plugins/<name>"`.
+`"source": "cli-plugins/<name>"`. Pick the manifest format by what the plugin contains:
+
+| Plugin contains | Format | Manifest |
+| --- | --- | --- |
+| Skills and/or MCP servers only | **Agent Plugins 1.0** (preferred) | root `plugin.json` with the spec `$schema`; fixed `skills/` and `mcp.json` |
+| Agents, hooks, or custom component paths | legacy | `.github/plugin/plugin.json` with `agents` / `skills` / `hooks` fields |
+
+Agent Plugins can still carry Copilot-only agents and hooks under `com.github.copilot/`, but the two
+existing legacy plugins don't need to move.
+
+### Ship the same skills to Cowork
+
+An Agent Plugins skills plugin can become a Cowork package without hand-writing a manifest:
+
+```powershell
+atk import openplugin --path ./cli-plugins/<name> --output <temp-folder> `
+  --privacy-url https://github.com/bmarcurella/copilot-marketplace/blob/main/PRIVACY.md `
+  --terms-url https://github.com/bmarcurella/copilot-marketplace/blob/main/TERMS.md
+```
+
+Then copy the generated `appPackage/` (manifest, icons, `skills/`) into `cowork-plugins/<name>/` and
+finish the manifest — see [CONTRIBUTING.md](CONTRIBUTING.md#ship-cli-plugin-skills-to-cowork) for what to fix.
 
 ## Working on this repo
 
@@ -124,14 +149,19 @@ Repo conventions for AI assistants live in [CLAUDE.md](CLAUDE.md) (Claude Code) 
 Before pushing, run the same validation CI runs on every PR:
 
 ```sh
-node scripts/validate.mjs
+node scripts/validate.mjs                    # manifests, skills, agents, library
+node scripts/sync-cowork-references.mjs --check
+node scripts/validate-cowork-schema.mjs      # Cowork manifests vs. the M365 schema (needs atk)
 ```
+
+To try a CLI plugin edit without installing it, start a session with
+`copilot --plugin-dir ./cli-plugins/<name>`.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full checklist.
 
 ## Conventions
 
-- **CLI plugin** folders contain `.github/plugin/plugin.json` plus their components.
+- **CLI plugin** folders contain a root `plugin.json` (Agent Plugins 1.0) or `.github/plugin/plugin.json` (legacy) plus their components.
 - **Cowork plugin** folders contain `manifest.json` (Unified App Manifest v1.29), `color.png`, `outline.png`, and `skills/<name>/SKILL.md`.
 - **Library** items are standalone and inert here; bundle them into a plugin or copy into a project's `.github/` (see [library/README.md](library/README.md)).
 - Built `.zip` artifacts are **never committed** — they go to `dist/` (gitignored) locally and ship via GitHub Releases built by CI.

@@ -27,10 +27,14 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install Microsoft 365 Agents Toolkit CLI
+        run: npm install -g @microsoft/m365agentstoolkit-cli@1
+
       - name: Validate repo
         run: |
           node scripts/validate.mjs
           node scripts/sync-cowork-references.mjs --check
+          node scripts/validate-cowork-schema.mjs
 
       - name: Resolve plugin name and version
         id: meta

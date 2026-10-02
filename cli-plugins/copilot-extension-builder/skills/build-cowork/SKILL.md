@@ -151,14 +151,18 @@ Placeholders are fine for personal testing; replace before store submission.
 ## Step 5 — Package (zip at root)
 
 ```powershell
+# PowerShell 7+ only — Windows PowerShell 5.1's Compress-Archive writes backslash entry names (skills\x\SKILL.md)
 Compress-Archive -Path manifest.json, color.png, outline.png, skills -DestinationPath ..\my-plugin.zip -Force
 ```
 
 Add `tools` to `-Path` only if a connector uses `mcpToolDescription.file`. Default output: a **sibling folder
-in the current workspace**, with the `.zip` written one level up so it doesn't include itself.
+in the current workspace**, with the `.zip` written one level up so it doesn't include itself. Run
+`atk validate --package-file ..\my-plugin.zip` (no sign-in needed) to check the zip against the M365 schema
+and validation rules before uploading.
 
 In an Agents Toolkit project (`appPackage/manifest.json` with `${{ENV_VAR}}` placeholders such as an OAuth
-`referenceId`), let `atk` resolve the placeholders and zip instead:
+`referenceId`), let `atk` resolve the placeholders and zip instead (it requires `m365agents.yml`, so it
+doesn't work on a bare package folder):
 
 ```bash
 atk package --manifest-file ./appPackage/manifest.json \
@@ -187,11 +191,11 @@ on it.
 
 ---
 
-## Convert an existing Claude plugin
+## Convert an existing Claude, Cursor, or Agent Plugins plugin
 
-If you already have a Claude Code or Cursor plugin (`.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`,
-or `.plugin/plugin.json`, plus `.mcp.json` and `skills/`), the Agents Toolkit CLI (**v1.1.12+**) imports it
-into an `atk` project:
+If you already have a Claude Code, Cursor, or Agent Plugins 1.0 plugin (`.claude-plugin/plugin.json`,
+`.cursor-plugin/plugin.json`, `.plugin/plugin.json`, or a root spec `plugin.json`, plus MCP config and
+`skills/`), the Agents Toolkit CLI (**v1.1.12+**) imports it into an `atk` project:
 
 ```bash
 npm install -g @microsoft/m365agentstoolkit-cli
@@ -205,10 +209,13 @@ atk import openplugin --path ./my-claude-plugin --output ./my-plugin-project \
   registration ID before publishing.
 - The generated manifest is **`devPreview`**; set `$schema`/`manifestVersion` to a GA version (v1.29+ for
   dynamic discovery) if your publishing channel requires it.
+- The `version` is copied from the plugin. **M365 validation rejects versions starting with `0`**
+  (`0.2.0` fails), so set `1.0.0` or higher in the generated manifest.
 - The `id` is a deterministic UUID v5 from the plugin name (override with `--app-id`). Placeholder icons are
   generated if missing.
-- Agent Plugins 1.0 layout (top-level `plugin.json` + `mcp.json`): move to `.plugin/plugin.json` and rename to
-  `.mcp.json` first.
+- Agent Plugins 1.0 layout (root `plugin.json` + `mcp.json`): `atk` 1.1.18 imports it directly (verified
+  2026-10-02). The Learn doc says to move the manifest to `.plugin/plugin.json` and rename `mcp.json` to
+  `.mcp.json` first; do that only if your `atk` version can't find the manifest.
 - Not yet converted: `commands/`, `agents/`, `hooks/`.
 - Round-trip back to a plugin directory with `atk export openplugin`. Then package with `atk package` (Step 5).
 
@@ -229,6 +236,8 @@ Legacy alternative: Microsoft's
 - [ ] If `mcpToolDescription` is present, its `file` exists in the zip; if absent, manifest is v1.29+.
 - [ ] Every MCP tool returns `annotations` (`readOnlyHint` / `destructiveHint` / `title`).
 - [ ] No fields outside the target schema version (`additionalProperties: false` rejects e.g. `packageName`).
+- [ ] Manifest `version` is `1.0.0` or higher (versions starting with `0` fail M365 validation).
+- [ ] `atk validate --manifest-file manifest.json` (or `--package-file <zip>`) passes — no sign-in needed.
 - [ ] Companion files: ≤20 per skill, ≤5 MB each, relative paths, no `..`, no hidden/reserved names.
 
 ---
