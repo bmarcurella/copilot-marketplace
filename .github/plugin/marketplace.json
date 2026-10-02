@@ -12,7 +12,7 @@
       "name": "copilot-extension-builder",
       "source": "cli-plugins/copilot-extension-builder",
       "description": "Interview-driven builder for Copilot agents, skills, and plugins across GitHub Copilot CLI/VS Code, Microsoft 365 Copilot, Copilot Cowork, and Copilot Studio.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "license": "MIT",
       "keywords": [
         "copilot",
