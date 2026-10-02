@@ -14,6 +14,7 @@ agent below. Owned paths (GitHub CLI plugin packaging, Cowork) stay in this plug
 | --- | --- |
 | Package a GitHub Copilot CLI / VS Code **plugin** (`plugin.json` + components + marketplace) | `build-cli-plugin` skill (in this plugin) |
 | Create a **Cowork** skill or plugin package | `build-cowork` skill (in this plugin) |
+| Bring a **remote MCP server** into M365 Copilot / Cowork as an app-package **connector** (`agentConnectors[]`), incl. public-client/PKCE OAuth — or decide between that and an admin-created **federated connector** | `build-cowork` skill (in this plugin); use `microsoft-365-agents-toolkit` for `atk` provision/`oauth/register` |
 | Check/refresh this builder's own knowledge | `sync-knowledge` skill (in this plugin) |
 
 ---
